@@ -22,6 +22,7 @@ Natural key: `org_name`, `name`. Zone names are unique within an org; revisited 
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - IP ranges stay strings; they are not linked to computing_core IP address nodes in v1.
 
 ## Neutrality
@@ -56,5 +57,4 @@ Documented path: `GET /api/v1/zones` (okta.networkZones.read).
 - `system` — True for the zones Okta ships. Null means not observed.
 - `gateways` — IP zone gateway ranges (CIDR or range strings).
 - `proxies` — IP zone trusted proxy ranges.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

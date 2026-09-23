@@ -108,7 +108,7 @@ An Okta org: one okta.com, okta-gov.com or custom-domain tenant. The node every 
 `ENTITY_ICON = "okta-org"`, no default dimensions, fields `name` (required; the value `okta__okta_org`
 is refused because it is the /okta page's every-org sentinel), `org_domain`, `okta_id`,
 `service_offering` (`commercial`, `okta_for_government_moderate`, `okta_for_government_high`,
-`okta_for_dod_il4`, or blank = not stated), `configuration`, `tags`. `NATURAL_KEY = ("name",)`; revisited
+`okta_for_dod_il4`, or blank = not stated), `tags`. `NATURAL_KEY = ("name",)`; revisited
 to `okta_id` with `req-okta-collector`. Article: `tap_plugin/okta/domain/okta_org.md`.
 
 #### Acceptance Criteria
@@ -140,11 +140,15 @@ One module per type under `tap_plugin/okta/models/`, registered in `tap-plugin.t
 policy_name, name`), `okta_network_zone`, `okta_trusted_origin`, `okta_admin_role`, `okta_resource_set`,
 `okta_role_assignment`, `okta_api_token`, `okta_device` (key `org_name, okta_id`: only ever observed),
 `okta_log_stream`; the rest key on `org_name, name`. Every type carries `org_name`, `okta_id` (blank until
-observed, except the device), `configuration` and `tags`; the vendor facts each carries are its article's
-Fields section. Closed vocabularies (`status`, `sign_on_mode`, `policy_type`, `role_type`, ...) are JSON
+observed, except the device) and `tags`; the vendor facts each carries are its article's
+Fields section. **No type has a free-form `configuration` field**, the org included: the records Okta keeps
+can carry secret material and personal data (an application's client secret, an identity provider's signing
+keys, a user's profile), and nothing here collects them, so only promoted columns are stored and a record
+cannot be passed through whole. Closed vocabularies (`status`, `sign_on_mode`, `policy_type`, `role_type`, ...) are JSON
 Schema enums checked against the Okta OpenAPI description dist/2026.08.4, each admitting blank as *not
 observed* except where the field is part of the key. `OktaPolicy` declares `EVALUATES_RULE__okta` as its
-one containment edge. Migration `0002_okta_corpus_v1`. Icons: `static/okta/icons/okta-<type>.svg`.
+one containment edge. Migration `0002_okta_corpus_v1`; `0003_drop_unused_configuration` removes the
+field. Icons: `static/okta/icons/okta-<type>.svg`.
 Articles: `tap_plugin/okta/domain/<type>.md`.
 
 #### Acceptance Criteria
@@ -158,6 +162,7 @@ Articles: `tap_plugin/okta/domain/<type>.md`.
 | req-okta-corpus-5 | Closed Vocabularies | Implemented | An enum field refuses a value outside its set and admits blank. | |
 | req-okta-corpus-6 | Icons | Implemented | Every `ENTITY_ICON` has an SVG with `width="64" height="64"` and a square viewBox. | Checked by `validate_plugin --strict`. |
 | req-okta-corpus-7 | Domain Articles | Implemented | Every node and edge type has a conforming article; every `FIELD_CRUD_SCHEMA` key is in its Fields section. | Checked with `tap.domain_articles.findings_for_root` (zero findings). |
+| req-okta-corpus-8 | No Free-Form Record | Implemented | No type declares `configuration`, and a `create_node` write carrying it is refused. | `tests/test_okta_corpus.py` |
 
 ---
 

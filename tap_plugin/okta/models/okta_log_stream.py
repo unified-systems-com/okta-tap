@@ -40,7 +40,6 @@ class OktaLogStream(BaseModel):
         "stream_type": {"type": "string", "enum": ["", "aws_eventbridge", "splunk_cloud_logstreaming"]},
         "status": {"type": "string", "enum": ["", "ACTIVE", "INACTIVE"]},
         "destination": {"type": "string"},
-        "configuration": {"type": "object"},
         "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
@@ -50,7 +49,6 @@ class OktaLogStream(BaseModel):
         "stream_type": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "aws_eventbridge", "splunk_cloud_logstreaming"]}},
         "status": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "ACTIVE", "INACTIVE"]}},
         "destination": {"validation": "jsonschema", "schema": {"type": "string"}},
-        "configuration": {"validation": "jsonschema", "schema": {"type": "object"}},
         "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "name"]
@@ -72,8 +70,6 @@ class OktaLogStream(BaseModel):
     #: Where the stream lands, in the destination's own words: an EventBridge event source (account,
     #: region, source name) or a Splunk host.
     destination = models.CharField(max_length=255, blank=True, default="")
-    #: The remainder of the object as Okta returns it; nothing identity-bearing lives here.
-    configuration = models.JSONField(default=dict, blank=True)
     #: TAP's tag map.
     tags = models.JSONField(default=dict, blank=True)
 

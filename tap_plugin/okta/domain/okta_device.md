@@ -22,6 +22,7 @@ Natural key: `org_name`, `okta_id`. Only a collector creates devices, and it alw
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - Device assurance policies and posture signals are Backlog (`req-okta-backlog-device-assurance`); the neutral device (computing_core) is not linked in v1.
 
 ## Neutrality
@@ -55,5 +56,4 @@ Documented path: `GET /api/v1/devices` (okta.devices.read).
 - `status` — Okta's device status.
 - `managed` — Whether a device-management integration reports the device managed. Null means not observed.
 - `secure_hardware_present` — profile.secureHardwarePresent (TPM / Secure Enclave). Null means not observed.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

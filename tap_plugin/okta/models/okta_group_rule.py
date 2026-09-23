@@ -39,7 +39,6 @@ class OktaGroupRule(BaseModel):
         "okta_id": {"type": "string"},
         "status": {"type": "string", "enum": ["", "ACTIVE", "INACTIVE", "INVALID"]},
         "expression": {"type": "string"},
-        "configuration": {"type": "object"},
         "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
@@ -48,7 +47,6 @@ class OktaGroupRule(BaseModel):
         "okta_id": {"validation": "jsonschema", "schema": {"type": "string"}},
         "status": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "ACTIVE", "INACTIVE", "INVALID"]}},
         "expression": {"validation": "jsonschema", "schema": {"type": "string"}},
-        "configuration": {"validation": "jsonschema", "schema": {"type": "object"}},
         "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "name"]
@@ -67,8 +65,6 @@ class OktaGroupRule(BaseModel):
     status = models.CharField(max_length=255, blank=True, default="")
     #: conditions.expression.value: the Okta Expression Language condition.
     expression = models.TextField(blank=True, default="")
-    #: The remainder of the object as Okta returns it; nothing identity-bearing lives here.
-    configuration = models.JSONField(default=dict, blank=True)
     #: TAP's tag map.
     tags = models.JSONField(default=dict, blank=True)
 

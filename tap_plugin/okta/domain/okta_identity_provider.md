@@ -22,6 +22,7 @@ Natural key: `org_name`, `name`. IdP names are unique within an org; revisited t
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - IdP signing certificates and client secrets are never stored.
 - Social and identity-verification providers are the same type, distinguished by `idp_type`.
 
@@ -57,5 +58,4 @@ Documented path: `GET /api/v1/idps` (okta.idps.read).
 - `provisioning_action` — policy.provisioning.action: AUTO means Just-In-Time provisioning creates users from assertions.
 - `account_link_action` — policy.accountLink.action: AUTO links an assertion to an EXISTING user. With AUTO an IdP can sign in as that user.
 - `subject_match_type` — policy.subject.matchType: how the assertion's subject is matched to a user (USERNAME, EMAIL, USERNAME_OR_EMAIL, CUSTOM_ATTRIBUTE).
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

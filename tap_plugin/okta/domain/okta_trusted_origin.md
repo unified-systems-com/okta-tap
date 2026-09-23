@@ -22,6 +22,7 @@ Natural key: `org_name`, `name`. Names are unique within an org; revisited to (o
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - Who created or last changed the origin (Cartography's CREATED_BY) is history, which the grid keeps, not an edge.
 
 ## Neutrality
@@ -53,5 +54,4 @@ Documented path: `GET /api/v1/trustedOrigins` (okta.trustedOrigins.read).
 - `origin` — The origin URL (scheme, host, port).
 - `scopes` — What the origin is trusted for: CORS, REDIRECT, IFRAME_EMBED.
 - `status` — Okta's status.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

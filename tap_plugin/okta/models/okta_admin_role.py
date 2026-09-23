@@ -41,7 +41,6 @@ class OktaAdminRole(BaseModel):
         "role_type": {"type": "string", "enum": ["", "SUPER_ADMIN", "ORG_ADMIN", "APP_ADMIN", "USER_ADMIN", "HELP_DESK_ADMIN", "READ_ONLY_ADMIN", "MOBILE_ADMIN", "API_ACCESS_MANAGEMENT_ADMIN", "REPORT_ADMIN", "GROUP_MEMBERSHIP_ADMIN", "ACCESS_CERTIFICATIONS_ADMIN", "ACCESS_REQUESTS_ADMIN", "WORKFLOWS_ADMIN", "CUSTOM"]},
         "permissions": {"type": "array", "items": {"type": "string"}},
         "description": {"type": "string"},
-        "configuration": {"type": "object"},
         "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
@@ -51,7 +50,6 @@ class OktaAdminRole(BaseModel):
         "role_type": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "SUPER_ADMIN", "ORG_ADMIN", "APP_ADMIN", "USER_ADMIN", "HELP_DESK_ADMIN", "READ_ONLY_ADMIN", "MOBILE_ADMIN", "API_ACCESS_MANAGEMENT_ADMIN", "REPORT_ADMIN", "GROUP_MEMBERSHIP_ADMIN", "ACCESS_CERTIFICATIONS_ADMIN", "ACCESS_REQUESTS_ADMIN", "WORKFLOWS_ADMIN", "CUSTOM"]}},
         "permissions": {"validation": "jsonschema", "schema": {"type": "array", "items": {"type": "string"}}},
         "description": {"validation": "jsonschema", "schema": {"type": "string"}},
-        "configuration": {"validation": "jsonschema", "schema": {"type": "object"}},
         "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "name"]
@@ -73,8 +71,6 @@ class OktaAdminRole(BaseModel):
     permissions = models.JSONField(default=list, blank=True)
     #: The role's description.
     description = models.TextField(blank=True, default="")
-    #: The remainder of the object as Okta returns it; nothing identity-bearing lives here.
-    configuration = models.JSONField(default=dict, blank=True)
     #: TAP's tag map.
     tags = models.JSONField(default=dict, blank=True)
 

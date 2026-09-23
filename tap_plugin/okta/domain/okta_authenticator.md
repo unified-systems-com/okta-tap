@@ -22,6 +22,7 @@ Natural key: `org_name`, `name`. Authenticator names are unique within an org; r
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - A user's enrolled factor is the ENROLLED_AUTHENTICATOR edge, not a node.
 - Duo's own configuration is the duo plugin's; this node records only that Okta hands verification to it.
 
@@ -55,5 +56,4 @@ Documented path: `GET /api/v1/authenticators` (okta.authenticators.read); a user
 - `authenticator_type` — Okta's type: app, password, email, phone, security_key, security_question, federated, tac.
 - `status` — Okta's authenticator status.
 - `phishing_resistant` — Whether the authenticator can satisfy a phishing-resistant constraint (FastPass, WebAuthn, smart card). Null means not observed.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

@@ -22,6 +22,7 @@ Natural key: `org_name`, `name`. Server names are unique within an org (the org 
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - Scopes and claims are fields in v1; access policies, their rules and per-client grants are Backlog (`req-okta-backlog-oauth-grants`).
 - The issuer URL lives on `identity_core__oidc_issuer`, not here.
 
@@ -57,5 +58,4 @@ Documented path: `GET /api/v1/authorizationServers` (okta.authorizationServers.r
 - `audiences` — The audiences the server mints tokens for.
 - `scopes` — Custom scope names. A field in v1: nothing yet needs to point at a scope (Backlog: req-okta-backlog-oauth-grants).
 - `claims` — Custom claim names. A field in v1 for the same reason as scopes.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

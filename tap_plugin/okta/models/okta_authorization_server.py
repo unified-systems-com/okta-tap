@@ -45,7 +45,6 @@ class OktaAuthorizationServer(BaseModel):
         "audiences": {"type": "array", "items": {"type": "string"}},
         "scopes": {"type": "array", "items": {"type": "string"}},
         "claims": {"type": "array", "items": {"type": "string"}},
-        "configuration": {"type": "object"},
         "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
@@ -58,7 +57,6 @@ class OktaAuthorizationServer(BaseModel):
         "audiences": {"validation": "jsonschema", "schema": {"type": "array", "items": {"type": "string"}}},
         "scopes": {"validation": "jsonschema", "schema": {"type": "array", "items": {"type": "string"}}},
         "claims": {"validation": "jsonschema", "schema": {"type": "array", "items": {"type": "string"}}},
-        "configuration": {"validation": "jsonschema", "schema": {"type": "object"}},
         "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "name"]
@@ -87,8 +85,6 @@ class OktaAuthorizationServer(BaseModel):
     scopes = models.JSONField(default=list, blank=True)
     #: Custom claim names. A field in v1 for the same reason as scopes.
     claims = models.JSONField(default=list, blank=True)
-    #: The remainder of the object as Okta returns it; nothing identity-bearing lives here.
-    configuration = models.JSONField(default=dict, blank=True)
     #: TAP's tag map.
     tags = models.JSONField(default=dict, blank=True)
 

@@ -2,7 +2,7 @@
 
 ## Blurb
 
-A resource set includes an Okta object. Okta also admits 'all users' or 'all groups' style members; those are recorded on the resource set's configuration, not as an edge to every object.
+A resource set includes an Okta object. Okta also admits 'all users' or 'all groups' style members; those are not an edge to every object, and v0 does not store them.
 
 ## Purpose
 

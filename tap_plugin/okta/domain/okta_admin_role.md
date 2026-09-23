@@ -22,6 +22,7 @@ Natural key: `org_name`, `name`. Standard roles are named by Okta and custom rol
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - Individual permissions are a list on the role, not nodes.
 
 ## Neutrality
@@ -54,5 +55,4 @@ Documented path: Custom roles by `GET /api/v1/iam/roles` (okta.roles.read); stan
 - `role_type` — Okta's standard role type, or CUSTOM.
 - `permissions` — A custom role's permissions (okta.users.manage, ...). Blank for standard roles: Okta defines those.
 - `description` — The role's description.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.
