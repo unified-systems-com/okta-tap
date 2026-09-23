@@ -1,0 +1,11 @@
+{
+  "slug": "GRANTS_ADMIN_ROLE__okta",
+  "name": "Grants Admin Role",
+  "description": "A role assignment grants one admin role.",
+  "sources": [
+    "okta__okta_role_assignment"
+  ],
+  "targets": [
+    "okta__okta_admin_role"
+  ]
+}

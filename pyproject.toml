@@ -3,7 +3,7 @@
 #   entry-point key = "okta"
 [project]
 name = "okta-tap"
-description = "Okta workforce identity as grid vocabulary: v0 carries one outer node, the Okta org (the okta.com tenant), so a design can place it before anything is collected."
+description = "Okta workforce identity as grid vocabulary: the org and the objects a FedRAMP operator answers for in it, with an org page."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.14"

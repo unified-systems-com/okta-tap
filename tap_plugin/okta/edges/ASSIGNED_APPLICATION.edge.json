@@ -1,0 +1,34 @@
+{
+  "slug": "ASSIGNED_APPLICATION__okta",
+  "name": "Assigned Application",
+  "description": "A user or a group is assigned an application: the assignment is what puts the app on a user's dashboard and lets Okta issue an assertion for them. A user's assignment may itself come from a group (scope GROUP).",
+  "sources": [
+    "okta__okta_user",
+    "okta__okta_group"
+  ],
+  "targets": [
+    "okta__okta_application"
+  ],
+  "property_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "scope": {
+        "type": "string",
+        "enum": [
+          "USER",
+          "GROUP"
+        ],
+        "description": "For a user assignment: USER when assigned directly, GROUP when inherited from a group assignment."
+      },
+      "priority": {
+        "type": "integer",
+        "description": "For a group assignment: its priority when several groups assign the same app with different profiles."
+      },
+      "status": {
+        "type": "string",
+        "description": "Okta's assignment status (ACTIVE, PROVISIONED, ...)."
+      }
+    }
+  }
+}

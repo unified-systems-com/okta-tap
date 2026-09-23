@@ -1,0 +1,13 @@
+{
+  "slug": "HOLDS_ROLE_ASSIGNMENT__okta",
+  "name": "Holds Role Assignment",
+  "description": "A user, a group or a service application holds an admin role assignment. For a group, every member holds it.",
+  "sources": [
+    "okta__okta_user",
+    "okta__okta_group",
+    "okta__okta_application"
+  ],
+  "targets": [
+    "okta__okta_role_assignment"
+  ]
+}

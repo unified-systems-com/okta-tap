@@ -1,0 +1,34 @@
+{
+  "slug": "REQUIRES_AUTHENTICATOR__okta",
+  "name": "Requires Authenticator",
+  "description": "A policy rule requires, or accepts, an authenticator to satisfy its verification. The properties carry the constraint that makes the difference between 'MFA' and 'phishing-resistant MFA'.",
+  "sources": [
+    "okta__okta_policy_rule"
+  ],
+  "targets": [
+    "okta__okta_authenticator"
+  ],
+  "property_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "constraint": {
+        "type": "string",
+        "enum": [
+          "possession",
+          "knowledge",
+          "inherence"
+        ],
+        "description": "Which factor class the authenticator satisfies in this rule."
+      },
+      "phishing_resistant": {
+        "type": "boolean",
+        "description": "The rule demands a phishing-resistant method of this class."
+      },
+      "hardware_protected": {
+        "type": "boolean",
+        "description": "The rule demands a hardware-protected key (device-bound)."
+      }
+    }
+  }
+}

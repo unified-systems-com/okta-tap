@@ -1,0 +1,11 @@
+{
+  "slug": "SERVES_ISSUER__okta",
+  "name": "Serves Issuer",
+  "description": "An Okta authorization server is the running service behind an OIDC issuer: it publishes the issuer's discovery document and keys and mints its tokens. The issuer is identity_core's neutral node, so a relying service's TRUSTS_ISSUER edge and this one meet on it. The issuer URL lives on that node, not on the authorization server.",
+  "sources": [
+    "okta__okta_authorization_server"
+  ],
+  "targets": [
+    "identity_core__oidc_issuer"
+  ]
+}

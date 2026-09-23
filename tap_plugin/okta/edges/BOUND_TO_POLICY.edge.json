@@ -1,0 +1,11 @@
+{
+  "slug": "BOUND_TO_POLICY__okta",
+  "name": "Bound To Policy",
+  "description": "An application is bound to the authentication policy (ACCESS_POLICY) Okta evaluates whenever a user signs in to it. Every app has exactly one; many apps may share one.",
+  "sources": [
+    "okta__okta_application"
+  ],
+  "targets": [
+    "okta__okta_policy"
+  ]
+}

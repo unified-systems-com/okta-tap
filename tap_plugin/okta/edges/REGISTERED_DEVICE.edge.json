@@ -1,0 +1,11 @@
+{
+  "slug": "REGISTERED_DEVICE__okta",
+  "name": "Registered Device",
+  "description": "A user has registered a device with Okta Verify.",
+  "sources": [
+    "okta__okta_user"
+  ],
+  "targets": [
+    "okta__okta_device"
+  ]
+}

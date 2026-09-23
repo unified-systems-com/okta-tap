@@ -1,0 +1,29 @@
+{
+  "slug": "APPLIES_TO_GROUP__okta",
+  "name": "Applies To Group",
+  "description": "A policy (global session, password, enrollment) or a policy rule (authentication policy rules) names a group in its people condition, to include or exclude it.",
+  "sources": [
+    "okta__okta_policy",
+    "okta__okta_policy_rule"
+  ],
+  "targets": [
+    "okta__okta_group"
+  ],
+  "property_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "mode": {
+        "type": "string",
+        "enum": [
+          "include",
+          "exclude"
+        ],
+        "description": "Whether the condition includes or excludes the far node. An exclusion is as load-bearing as an inclusion: an excluded group is exactly who the rule does not protect."
+      }
+    },
+    "required": [
+      "mode"
+    ]
+  }
+}

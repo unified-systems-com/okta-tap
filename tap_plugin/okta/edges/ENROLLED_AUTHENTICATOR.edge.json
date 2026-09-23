@@ -1,0 +1,42 @@
+{
+  "slug": "ENROLLED_AUTHENTICATOR__okta",
+  "name": "Enrolled Authenticator",
+  "description": "A user has enrolled an authenticator (Okta's factor enrollment). An edge, not a node: Cartography's OktaUserFactor is this relationship, and everything it carries is a property of the pair.",
+  "sources": [
+    "okta__okta_user"
+  ],
+  "targets": [
+    "okta__okta_authenticator"
+  ],
+  "property_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "status": {
+        "type": "string",
+        "enum": [
+          "ACTIVE",
+          "PENDING_ACTIVATION",
+          "NOT_SETUP",
+          "ENROLLED",
+          "EXPIRED",
+          "INACTIVE",
+          "DISABLED"
+        ],
+        "description": "Okta's factor status."
+      },
+      "factor_type": {
+        "type": "string",
+        "description": "Okta's factorType for the enrollment (push, signed_nonce, webauthn, sms, call, email, token:software:totp, ...)."
+      },
+      "created_at": {
+        "type": "string",
+        "description": "When the factor was enrolled (ISO-8601)."
+      },
+      "last_verified_at": {
+        "type": "string",
+        "description": "When the factor was last used to verify (ISO-8601)."
+      }
+    }
+  }
+}

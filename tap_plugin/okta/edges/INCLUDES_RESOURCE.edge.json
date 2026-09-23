@@ -1,0 +1,18 @@
+{
+  "slug": "INCLUDES_RESOURCE__okta",
+  "name": "Includes Resource",
+  "description": "A resource set includes an Okta object. Okta also admits 'all users' or 'all groups' style members; those are recorded on the resource set's configuration, not as an edge to every object.",
+  "sources": [
+    "okta__okta_resource_set"
+  ],
+  "targets": [
+    "okta__okta_user",
+    "okta__okta_group",
+    "okta__okta_application",
+    "okta__okta_authorization_server",
+    "okta__okta_identity_provider",
+    "okta__okta_policy",
+    "okta__okta_admin_role",
+    "okta__okta_device"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "slug": "ROUTES_AUTHENTICATION__okta",
+  "name": "Routes Authentication",
+  "description": "An identity provider routing rule (IDP_DISCOVERY policy) sends matching sign-ins to an identity provider instead of Okta's own sign-in. Adding a routing rule is how inbound federation is switched on for real users.",
+  "sources": [
+    "okta__okta_policy_rule"
+  ],
+  "targets": [
+    "okta__okta_identity_provider"
+  ]
+}

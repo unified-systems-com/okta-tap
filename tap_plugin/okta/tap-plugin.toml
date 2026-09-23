@@ -3,7 +3,14 @@ plugin_version = "0.1.0"
 requires_tap = ">=0.2.1"
 slug = "okta"
 name = "TAP Okta"
-description = "Okta workforce identity as grid vocabulary: v0 carries one outer node, the Okta org (the okta.com tenant), so a design can place it before anything is collected."
+description = "Okta workforce identity as grid vocabulary: the org and the objects a FedRAMP operator answers for in it (users, groups, applications, authorization servers, identity providers, authenticators, policies, network zones, admin roles, API tokens, devices, log streams), with an org page."
+
+# Vocabulary dependency (add-edge, cross-plugin endpoints): SERVES_ISSUER__okta targets identity_core's
+# neutral OIDC issuer, and an OIDC identity provider reaches its issuer by identity_core's own
+# TRUSTS_ISSUER__identity_core. No Python import; install + migrate order only.
+depends_on = [
+    { slug = "identity_core", note = "Vocabulary dependency: SERVES_ISSUER__okta targets identity_core__oidc_issuer, the neutral issuer a relying service's TRUSTS_ISSUER edge also lands on." },
+]
 
 # Pure Python, no dependencies, no crypto (spec-fips.md, req-tap-plugin-manifest-v0-fips).
 [fips]
@@ -11,10 +18,56 @@ status = "compatible"
 
 [models]
 okta__okta_org = "tap_plugin.okta.models.okta_org.OktaOrg"
+okta__okta_user = "tap_plugin.okta.models.okta_user.OktaUser"
+okta__okta_group = "tap_plugin.okta.models.okta_group.OktaGroup"
+okta__okta_group_rule = "tap_plugin.okta.models.okta_group_rule.OktaGroupRule"
+okta__okta_application = "tap_plugin.okta.models.okta_application.OktaApplication"
+okta__okta_authorization_server = "tap_plugin.okta.models.okta_authorization_server.OktaAuthorizationServer"
+okta__okta_identity_provider = "tap_plugin.okta.models.okta_identity_provider.OktaIdentityProvider"
+okta__okta_authenticator = "tap_plugin.okta.models.okta_authenticator.OktaAuthenticator"
+okta__okta_policy = "tap_plugin.okta.models.okta_policy.OktaPolicy"
+okta__okta_policy_rule = "tap_plugin.okta.models.okta_policy_rule.OktaPolicyRule"
+okta__okta_network_zone = "tap_plugin.okta.models.okta_network_zone.OktaNetworkZone"
+okta__okta_trusted_origin = "tap_plugin.okta.models.okta_trusted_origin.OktaTrustedOrigin"
+okta__okta_admin_role = "tap_plugin.okta.models.okta_admin_role.OktaAdminRole"
+okta__okta_resource_set = "tap_plugin.okta.models.okta_resource_set.OktaResourceSet"
+okta__okta_role_assignment = "tap_plugin.okta.models.okta_role_assignment.OktaRoleAssignment"
+okta__okta_api_token = "tap_plugin.okta.models.okta_api_token.OktaApiToken"
+okta__okta_device = "tap_plugin.okta.models.okta_device.OktaDevice"
+okta__okta_log_stream = "tap_plugin.okta.models.okta_log_stream.OktaLogStream"
+
+[edges]
+BELONGS_TO_ORG__okta = "edges/BELONGS_TO_ORG.edge.json"
+MEMBER_OF_GROUP__okta = "edges/MEMBER_OF_GROUP.edge.json"
+ASSIGNS_GROUP_MEMBERSHIP__okta = "edges/ASSIGNS_GROUP_MEMBERSHIP.edge.json"
+ASSIGNED_APPLICATION__okta = "edges/ASSIGNED_APPLICATION.edge.json"
+IMPORTS_GROUP__okta = "edges/IMPORTS_GROUP.edge.json"
+SENDS_ASSERTION__okta = "edges/SENDS_ASSERTION.edge.json"
+SERVES_ISSUER__okta = "edges/SERVES_ISSUER.edge.json"
+BOUND_TO_POLICY__okta = "edges/BOUND_TO_POLICY.edge.json"
+EVALUATES_RULE__okta = "edges/EVALUATES_RULE.edge.json"
+APPLIES_TO_GROUP__okta = "edges/APPLIES_TO_GROUP.edge.json"
+MATCHES_NETWORK_ZONE__okta = "edges/MATCHES_NETWORK_ZONE.edge.json"
+REQUIRES_AUTHENTICATOR__okta = "edges/REQUIRES_AUTHENTICATOR.edge.json"
+ENROLLS_AUTHENTICATOR__okta = "edges/ENROLLS_AUTHENTICATOR.edge.json"
+ROUTES_AUTHENTICATION__okta = "edges/ROUTES_AUTHENTICATION.edge.json"
+ENROLLED_AUTHENTICATOR__okta = "edges/ENROLLED_AUTHENTICATOR.edge.json"
+DELEGATES_VERIFICATION__okta = "edges/DELEGATES_VERIFICATION.edge.json"
+HOLDS_ROLE_ASSIGNMENT__okta = "edges/HOLDS_ROLE_ASSIGNMENT.edge.json"
+GRANTS_ADMIN_ROLE__okta = "edges/GRANTS_ADMIN_ROLE.edge.json"
+SCOPED_TO_RESOURCE__okta = "edges/SCOPED_TO_RESOURCE.edge.json"
+INCLUDES_RESOURCE__okta = "edges/INCLUDES_RESOURCE.edge.json"
+ACTS_AS_USER__okta = "edges/ACTS_AS_USER.edge.json"
+REGISTERED_DEVICE__okta = "edges/REGISTERED_DEVICE.edge.json"
+WRITES_LOGS__okta = "edges/WRITES_LOGS.edge.json"
+IDENTIFIES_PERSON__okta = "edges/IDENTIFIES_PERSON.edge.json"
+
+[grift]
+okta_page = "grift/okta-page.grift.json"
 
 # In-package boot record (req-boot-bootstrap-records-in-package). Digest is the canonical sha256
 # of the record; regenerate with scripts/boot-record-hash --refresh in a core checkout.
 [[boot.records]]
 name = "ci"
-description = "RESERVED NAME (req-boot-bootstrap-ci-record): the stack this plugin's own tests run in — depends_on closure (empty) + self, offline, credential-free. The consumer flips self to editable."
-sha256 = "dcd7bbb8dc1831210f2254091852c0348395ae39f5fedda6d0ffda5823d669da"
+description = "RESERVED NAME (req-boot-bootstrap-ci-record): the stack this plugin's own tests run in — depends_on closure (identity_core) + self, offline, credential-free. The consumer flips self to editable."
+sha256 = "8a1e3e5de0f47dd7f04f865d4f17a96d4b8f541aedc0c062ea4d6c73b3b002ce"

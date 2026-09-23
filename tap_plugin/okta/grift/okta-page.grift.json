@@ -1,0 +1,3282 @@
+{
+  "metadata": {
+    "grift_version": "0"
+  },
+  "_reserved": {},
+  "batches": [
+    {
+      "batch_entity": {
+        "entity_id": "01a0cc72-bb1d-7622-8104-6bfda3791a6b",
+        "entity_type": "batch",
+        "name": "okta: org page v0.1.0",
+        "dimensions": {}
+      },
+      "batch_node": {
+        "source": "tap_plugin.okta.grift.okta_page",
+        "name": "okta: org page v0.1.0",
+        "description": "The /okta page (req-okta-page-org): one page, a graph panel over a projection with the okta-org.js layout and its org-scoped scene searches, and fifteen standard table panels, each over one org-scoped search. Every search takes ?org=<org name>; nothing here names an org or an entity id outside this bundle."
+      },
+      "nodes": [
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "entity_type": "page",
+            "name": "Okta",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "Okta",
+            "slug": "/okta",
+            "nav_weight": 300,
+            "description": "One Okta org as a FedRAMP operator reads it: the configuration as a picture (applications, groups, policies, authenticators, federation, administration), then the tables an assessor asks about first: who is assigned what, who holds admin roles, which sign-on rules demand which factors, users who are not active or not signing in, API tokens, network zones, trusted origins and where the System Log goes. ?org=<org name> picks the org (exact match); absent, every org on the grid is shown (the one org, on a single-org grid). Every search that joins two Okta objects scopes both to the org.",
+            "layout": {
+              "full_bleed": true,
+              "columns": {
+                "col-1": {
+                  "width": "1fr",
+                  "rows": {
+                    "row-1": {
+                      "panel-id": "org-graph",
+                      "height": "66vh"
+                    },
+                    "row-2": {
+                      "panel-id": "applications",
+                      "height": "auto"
+                    },
+                    "row-3": {
+                      "panel-id": "assignments",
+                      "height": "auto"
+                    },
+                    "row-4": {
+                      "panel-id": "admin-roles",
+                      "height": "auto"
+                    },
+                    "row-5": {
+                      "panel-id": "sign-on-rules",
+                      "height": "auto"
+                    },
+                    "row-6": {
+                      "panel-id": "rule-authenticators",
+                      "height": "auto"
+                    },
+                    "row-7": {
+                      "panel-id": "authenticators",
+                      "height": "auto"
+                    },
+                    "row-8": {
+                      "panel-id": "enrollment",
+                      "height": "auto"
+                    },
+                    "row-9": {
+                      "panel-id": "users-attention",
+                      "height": "auto"
+                    },
+                    "row-10": {
+                      "panel-id": "users-sign-in",
+                      "height": "auto"
+                    },
+                    "row-11": {
+                      "panel-id": "api-tokens",
+                      "height": "auto"
+                    },
+                    "row-12": {
+                      "panel-id": "identity-providers",
+                      "height": "auto"
+                    },
+                    "row-13": {
+                      "panel-id": "authorization-servers",
+                      "height": "auto"
+                    },
+                    "row-14": {
+                      "panel-id": "network-zones",
+                      "height": "auto"
+                    },
+                    "row-15": {
+                      "panel-id": "trusted-origins",
+                      "height": "auto"
+                    },
+                    "row-16": {
+                      "panel-id": "log-streams",
+                      "height": "auto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb7a62fa71d",
+            "entity_type": "search",
+            "name": "okta — the org",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — the org",
+            "description": "The org node itself, so an org with nothing in it yet still draws. Scene search for the /okta graph panel.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "RETURN o"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb8f55a413f",
+            "entity_type": "search",
+            "name": "okta — what the org holds (graph scene)",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — what the org holds (graph scene)",
+            "description": "Every node of the drawn types that BELONGS_TO_ORG__okta the org, with the membership edges (the layout hides them and draws family boxes instead). Users, devices, API tokens and group rules are deliberately left to the tables: an org has thousands of users and the picture is of the configuration. When the scene gains a node type, add it here AND add its edge searches.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (n)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "AND n.entity_type IN [\"okta__okta_application\", \"okta__okta_group\", \"okta__okta_policy\", \"okta__okta_policy_rule\", \"okta__okta_authenticator\", \"okta__okta_identity_provider\", \"okta__okta_authorization_server\", \"okta__okta_admin_role\", \"okta__okta_role_assignment\", \"okta__okta_resource_set\", \"okta__okta_network_zone\", \"okta__okta_trusted_origin\", \"okta__okta_log_stream\"]",
+                "RETURN n, o"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb9aad07bc1",
+            "entity_type": "search",
+            "name": "okta — scene edges: group → application assignments",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — scene edges: group → application assignments",
+            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_group)-[:ASSIGNED_APPLICATION__okta]->(b:okta__okta_application)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "RETURN a, b"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbbae1b6e8ff",
+            "entity_type": "search",
+            "name": "okta — scene edges: application → authentication policy",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — scene edges: application → authentication policy",
+            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_application)-[:BOUND_TO_POLICY__okta]->(b:okta__okta_policy)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "RETURN a, b"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbbbf7f626cf",
+            "entity_type": "search",
+            "name": "okta — scene edges: policy → its rules (the layout nests them)",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — scene edges: policy → its rules (the layout nests them)",
+            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy)-[:EVALUATES_RULE__okta]->(b:okta__okta_policy_rule)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "RETURN a, b"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbbcf676de9e",
+            "entity_type": "search",
+            "name": "okta — scene edges: rule → authenticator it requires",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — scene edges: rule → authenticator it requires",
+            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy_rule)-[:REQUIRES_AUTHENTICATOR__okta]->(b:okta__okta_authenticator)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "RETURN a, b"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbbdbb85663e",
+            "entity_type": "search",
+            "name": "okta — scene edges: enrollment policy → authenticator",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — scene edges: enrollment policy → authenticator",
+            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy)-[:ENROLLS_AUTHENTICATOR__okta]->(b:okta__okta_authenticator)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "RETURN a, b"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbbeaf57eb44",
+            "entity_type": "search",
+            "name": "okta — scene edges: policy or rule → group it names",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — scene edges: policy or rule → group it names",
+            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a)-[:APPLIES_TO_GROUP__okta]->(b:okta__okta_group)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "AND a.entity_type IN [\"okta__okta_policy\", \"okta__okta_policy_rule\"]",
+                "RETURN a, b"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbbf5b77f293",
+            "entity_type": "search",
+            "name": "okta — scene edges: routing rule → identity provider",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — scene edges: routing rule → identity provider",
+            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy_rule)-[:ROUTES_AUTHENTICATION__okta]->(b:okta__okta_identity_provider)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "RETURN a, b"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc092e2c763",
+            "entity_type": "search",
+            "name": "okta — scene edges: identity provider → group it assigns",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — scene edges: identity provider → group it assigns",
+            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_identity_provider)-[:ASSIGNS_GROUP_MEMBERSHIP__okta]->(b:okta__okta_group)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "RETURN a, b"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc1015bb260",
+            "entity_type": "search",
+            "name": "okta — scene edges: group or service app → admin role assignment",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — scene edges: group or service app → admin role assignment",
+            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a)-[:HOLDS_ROLE_ASSIGNMENT__okta]->(b:okta__okta_role_assignment)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "AND a.entity_type IN [\"okta__okta_group\", \"okta__okta_application\"]",
+                "RETURN a, b"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc2880988f2",
+            "entity_type": "search",
+            "name": "okta — scene edges: assignment → admin role",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — scene edges: assignment → admin role",
+            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_role_assignment)-[:GRANTS_ADMIN_ROLE__okta]->(b:okta__okta_admin_role)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "RETURN a, b"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc3cdbcb4ad",
+            "entity_type": "search",
+            "name": "okta — scene edges: assignment → its scope",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — scene edges: assignment → its scope",
+            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_role_assignment)-[:SCOPED_TO_RESOURCE__okta]->(b)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "RETURN a, b"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc448230cce",
+            "entity_type": "search",
+            "name": "okta — scene edges: application → group it masters",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — scene edges: application → group it masters",
+            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_application)-[:IMPORTS_GROUP__okta]->(b:okta__okta_group)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "RETURN a, b"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc5bb18866c",
+            "entity_type": "search",
+            "name": "okta — scene edges: rule → network zone",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — scene edges: rule → network zone",
+            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy_rule)-[:MATCHES_NETWORK_ZONE__okta]->(b:okta__okta_network_zone)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "RETURN a, b"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb6a7b48100",
+            "entity_type": "layout",
+            "name": "okta org layout",
+            "dimensions": {}
+          },
+          "node": {
+            "name": "okta org layout",
+            "description": "Draws one Okta org at the centre of a 3x3 grid of family boxes (Federation, Authenticators, Network above; Groups left and Applications right; Administration, Policies below), each policy's rules nested inside it. Names no entity id: reusable for any org, and a node whose type no family names is drawn in an Other box and reported.",
+            "definition": {
+              "js_file": "tap_plugin/okta/static/okta/js/projections/okta-org.js",
+              "arrangements": []
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb58a9db10f",
+            "entity_type": "elevation",
+            "name": "okta org elevation",
+            "dimensions": {}
+          },
+          "node": {
+            "name": "okta org elevation",
+            "description": "One Okta org at one elevation.",
+            "definition": {
+              "zoom": 1.0,
+              "description": "One Okta org at one elevation.",
+              "layouts": [
+                "01a0cc72-bb1c-71a6-9bbe-cbb6a7b48100"
+              ],
+              "double_tap_targets": []
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb48af52d57",
+            "entity_type": "projection",
+            "name": "okta org projection",
+            "dimensions": {}
+          },
+          "node": {
+            "name": "okta org projection",
+            "description": "The /okta graph: one elevation, one layout module (okta-org.js). Icon-badge node style; placement fixed (lock_nodes); opens fitted.",
+            "definition": {
+              "node_style": {
+                "mode": "icon-badge"
+              },
+              "elevations": [
+                "01a0cc72-bb1c-71a6-9bbe-cbb58a9db10f"
+              ],
+              "default_elevation_id": "01a0cc72-bb1c-71a6-9bbe-cbb58a9db10f",
+              "min_zoom": "fit",
+              "lock_nodes": true
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "entity_type": "panel",
+            "name": "Okta org",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "Okta org",
+            "slug": "okta-org-graph",
+            "description": "The org's configuration in one picture: which groups are assigned which applications, which authentication policy each application is bound to and the authenticators its rules require, inbound federation, and who holds which admin role. Users, devices and API tokens are in the tables below.",
+            "view": "tap_viz/panels/graph_panel.html",
+            "config": {
+              "height": "100%",
+              "hide_header": true
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbd904972981",
+            "entity_type": "search",
+            "name": "okta — applications in the org",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — applications in the org",
+            "description": "Every okta__okta_application that BELONGS_TO_ORG__okta the org. Envelope mode (RETURN n) so the table receives typed nodes; sorted client-side (Gryphon refuses ORDER BY on a traversal).",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (n:okta__okta_application)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "RETURN n"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbdac3b184e6",
+            "entity_type": "panel",
+            "name": "Applications",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-applications",
+            "name": "Applications",
+            "description": "Every application integration in the org and how users sign in to it. SAML and OIDC federate; SWA (BROWSER_PLUGIN, AUTO_LOGIN, SECURE_PASSWORD_STORE) and BASIC_AUTH vault a password Okta replays, which a FedRAMP boundary usually has to justify. A blank cell is not observed, never 'none'.",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 360,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "data.label",
+                  "title": "Application",
+                  "header_tooltip": "The label users see on their dashboard.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "data.sign_on_mode",
+                  "title": "Sign-on mode",
+                  "header_tooltip": "Okta's signOnMode. Amber: the app is signed in by a vaulted password, not a federated assertion.",
+                  "headerSort": true,
+                  "width": 170,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "SAML_2_0": "good",
+                      "OPENID_CONNECT": "good",
+                      "WS_FEDERATION": "good",
+                      "SAML_1_1": "warn",
+                      "BROWSER_PLUGIN": "warn",
+                      "AUTO_LOGIN": "warn",
+                      "SECURE_PASSWORD_STORE": "warn",
+                      "BASIC_AUTH": "warn",
+                      "BOOKMARK": "muted"
+                    }
+                  }
+                },
+                {
+                  "field": "data.status",
+                  "title": "Status",
+                  "header_tooltip": "Okta's app status.",
+                  "headerSort": true,
+                  "width": 110,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "ACTIVE": "good",
+                      "INACTIVE": "muted"
+                    }
+                  }
+                },
+                {
+                  "field": "data.application_type",
+                  "title": "OAuth type",
+                  "header_tooltip": "For OIDC and service apps: web, native, browser or service (client credentials, no user).",
+                  "headerSort": true,
+                  "width": 120
+                },
+                {
+                  "field": "data.app_name",
+                  "title": "Catalog key",
+                  "header_tooltip": "Okta's app name: the integration-network key, or a generated key for a custom app.",
+                  "headerSort": true,
+                  "width": 170
+                },
+                {
+                  "field": "data.client_id",
+                  "title": "Client id",
+                  "header_tooltip": "The OAuth client_id, for OIDC and service apps.",
+                  "headerSort": true,
+                  "width": 200
+                }
+              ]
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bc3e68eca81",
+            "entity_type": "search",
+            "name": "okta — application assignments",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — application assignments",
+            "description": "Each ASSIGNED_APPLICATION__okta edge between an assignee and an application that both BELONG_TO_ORG the org: the application, the assignee (a group or a user) and the edge's scope, priority and status. PROJECTION mode (rows, not nodes).",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p)-[e:ASSIGNED_APPLICATION__okta]->(a:okta__okta_application)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "RETURN a.data.label AS application, a.data.sign_on_mode AS sign_on_mode, p.name AS assignee, p.entity_type AS assignee_type, e.data.properties.scope AS scope, e.data.properties.priority AS priority, e.data.properties.status AS status, a.entity_id AS application_id",
+                "ORDER BY application"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bc4bef0cf4a",
+            "entity_type": "panel",
+            "name": "Who is assigned each application",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-assignments",
+            "name": "Who is assigned each application",
+            "description": "One row per assignment: a group or a user assigned an application. A group assignment reaches every member; a user row scoped GROUP was inherited from one. Assignments are what put an application on a user's dashboard and let Okta issue an assertion for them.",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 420,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "application",
+                  "title": "Application",
+                  "header_tooltip": "The application assigned.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "assignee",
+                  "title": "Assignee",
+                  "header_tooltip": "The group or user it is assigned to.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "assignee_type",
+                  "title": "Kind",
+                  "header_tooltip": "Group or user.",
+                  "headerSort": true,
+                  "width": 100,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "okta__okta_group": "muted",
+                      "okta__okta_user": "muted"
+                    },
+                    "labels": {
+                      "okta__okta_user": "User",
+                      "okta__okta_group": "Group",
+                      "okta__okta_application": "Service app"
+                    }
+                  }
+                },
+                {
+                  "field": "scope",
+                  "title": "Scope",
+                  "header_tooltip": "For a user: USER when assigned directly, GROUP when inherited from a group assignment. Blank for a group row.",
+                  "headerSort": true,
+                  "width": 100
+                },
+                {
+                  "field": "priority",
+                  "title": "Priority",
+                  "header_tooltip": "For a group: which group's app profile wins when several assign the same app.",
+                  "headerSort": true,
+                  "width": 100,
+                  "align": "right"
+                },
+                {
+                  "field": "status",
+                  "title": "Status",
+                  "header_tooltip": "Okta's assignment status.",
+                  "headerSort": true,
+                  "width": 130
+                },
+                {
+                  "field": "sign_on_mode",
+                  "title": "Sign-on mode",
+                  "header_tooltip": "The application's signOnMode, repeated so the table reads on its own.",
+                  "headerSort": true,
+                  "width": 160
+                }
+              ]
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bc688666c47",
+            "entity_type": "search",
+            "name": "okta — admin role assignments",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — admin role assignments",
+            "description": "Each principal that HOLDS_ROLE_ASSIGNMENT__okta an assignment, the role it GRANTS_ADMIN_ROLE__okta; the holder and the role are scoped to the org by BELONGS_TO_ORG__okta, the assignment in the middle by its org_name column. PROJECTION mode. The assignment's scope is not joined: OPTIONAL MATCH v0 needs a single-node mandatory MATCH.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p)-[:HOLDS_ROLE_ASSIGNMENT__okta]->(ra:okta__okta_role_assignment)-[:GRANTS_ADMIN_ROLE__okta]->(r:okta__okta_admin_role)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "AND (ra.data.org_name = $org OR o.entity_type = $org)",
+                "RETURN p.name AS holder, p.entity_type AS holder_type, r.data.name AS role, r.data.role_type AS role_type, ra.data.assignment_type AS assignment_type, ra.data.status AS status",
+                "ORDER BY role"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bc76d76a068",
+            "entity_type": "panel",
+            "name": "Admin role assignments",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-admin-roles",
+            "name": "Admin role assignments",
+            "description": "Who holds which administrator role. A group holding a role gives it to every member, which is why an admin role assigned to a group is only as tight as that group's membership. The scope of each assignment (resource set or target groups/apps; none means the whole org) is drawn on the graph above; Gryphon cannot yet join an optional scope into these rows.",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 360,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "holder",
+                  "title": "Holder",
+                  "header_tooltip": "The user, group or service app holding the assignment.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "holder_type",
+                  "title": "Kind",
+                  "header_tooltip": "User, group or service app (a CLIENT assignment).",
+                  "headerSort": true,
+                  "width": 120,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "okta__okta_group": "muted",
+                      "okta__okta_user": "muted",
+                      "okta__okta_application": "warn"
+                    },
+                    "labels": {
+                      "okta__okta_user": "User",
+                      "okta__okta_group": "Group",
+                      "okta__okta_application": "Service app"
+                    }
+                  }
+                },
+                {
+                  "field": "role",
+                  "title": "Role",
+                  "header_tooltip": "The role's label.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "role_type",
+                  "title": "Role type",
+                  "header_tooltip": "Red: a role that can change who else is an administrator or reset anyone's factors.",
+                  "headerSort": true,
+                  "width": 220,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "SUPER_ADMIN": "bad",
+                      "ORG_ADMIN": "bad",
+                      "APP_ADMIN": "warn",
+                      "USER_ADMIN": "warn",
+                      "HELP_DESK_ADMIN": "warn",
+                      "GROUP_MEMBERSHIP_ADMIN": "warn",
+                      "MOBILE_ADMIN": "warn",
+                      "API_ACCESS_MANAGEMENT_ADMIN": "warn",
+                      "CUSTOM": "warn",
+                      "READ_ONLY_ADMIN": "muted",
+                      "REPORT_ADMIN": "muted"
+                    }
+                  }
+                },
+                {
+                  "field": "assignment_type",
+                  "title": "Assigned to",
+                  "header_tooltip": "Okta's assignmentType: USER, GROUP or CLIENT.",
+                  "headerSort": true,
+                  "width": 120
+                },
+                {
+                  "field": "status",
+                  "title": "Status",
+                  "header_tooltip": "Okta's assignment status.",
+                  "headerSort": true,
+                  "width": 110,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "ACTIVE": "good",
+                      "INACTIVE": "muted"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bc97339124a",
+            "entity_type": "search",
+            "name": "okta — sign-on rules",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — sign-on rules",
+            "description": "Each rule a global session (OKTA_SIGN_ON) or authentication (ACCESS_POLICY) policy EVALUATES_RULE__okta; the policy and the rule are both scoped to the org. PROJECTION mode; ordered by policy then priority client-side.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p:okta__okta_policy)-[:EVALUATES_RULE__okta]->(r:okta__okta_policy_rule)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "AND p.data.policy_type IN [\"OKTA_SIGN_ON\", \"ACCESS_POLICY\"]",
+                "RETURN p.data.name AS policy, p.data.policy_type AS policy_type, r.data.name AS rule, r.data.priority AS priority, r.data.status AS status, r.data.access AS access, r.data.factor_mode AS factor_mode, r.data.reauthenticate_in AS reauthenticate_in",
+                "ORDER BY policy"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bca3cbae75b",
+            "entity_type": "panel",
+            "name": "Sign-on rules and their factor requirement",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-sign-on-rules",
+            "name": "Sign-on rules and their factor requirement",
+            "description": "Every rule of every global session and authentication policy, in the order Okta evaluates them: whether it allows or denies, and whether it demands one factor type or two. A 1FA ALLOW rule is a password-only path in, and the catch-all rule at the bottom is the one that decides everything nobody wrote a rule for. Blank factor mode is not observed, never 'no MFA'.",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 360,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "policy",
+                  "title": "Policy",
+                  "header_tooltip": "The policy the rule belongs to.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "policy_type",
+                  "title": "Kind",
+                  "header_tooltip": "Global session policy or authentication (app sign-on) policy.",
+                  "headerSort": true,
+                  "width": 150,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "OKTA_SIGN_ON": "muted",
+                      "ACCESS_POLICY": "muted"
+                    },
+                    "labels": {
+                      "OKTA_SIGN_ON": "Global session",
+                      "ACCESS_POLICY": "Authentication"
+                    }
+                  }
+                },
+                {
+                  "field": "priority",
+                  "title": "#",
+                  "header_tooltip": "Evaluation order within the policy (1 first).",
+                  "headerSort": true,
+                  "width": 60,
+                  "align": "right"
+                },
+                {
+                  "field": "rule",
+                  "title": "Rule",
+                  "header_tooltip": "The rule's name.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "access",
+                  "title": "Access",
+                  "header_tooltip": "What the rule decides when it matches.",
+                  "headerSort": true,
+                  "width": 100,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "ALLOW": "good",
+                      "DENY": "muted"
+                    }
+                  }
+                },
+                {
+                  "field": "factor_mode",
+                  "title": "Factors",
+                  "header_tooltip": "2FA: two factor types required. 1FA: one is enough, which for an ALLOW rule means a password alone can pass.",
+                  "headerSort": true,
+                  "width": 100,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "2FA": "good",
+                      "1FA": "bad"
+                    }
+                  }
+                },
+                {
+                  "field": "reauthenticate_in",
+                  "title": "Re-verify after",
+                  "header_tooltip": "ISO-8601 duration before the user must verify again.",
+                  "headerSort": true,
+                  "width": 140
+                },
+                {
+                  "field": "status",
+                  "title": "Status",
+                  "header_tooltip": "Okta's rule status.",
+                  "headerSort": true,
+                  "width": 110,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "ACTIVE": "good",
+                      "INACTIVE": "muted"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bccc78cf7b7",
+            "entity_type": "search",
+            "name": "okta — authenticators required by rules",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — authenticators required by rules",
+            "description": "Each REQUIRES_AUTHENTICATOR__okta edge from a policy rule, with the rule's policy; the policy and the authenticator are scoped to the org by BELONGS_TO_ORG__okta, the rule in the middle by its org_name column. PROJECTION mode.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p:okta__okta_policy)-[:EVALUATES_RULE__okta]->(r:okta__okta_policy_rule)-[e:REQUIRES_AUTHENTICATOR__okta]->(a:okta__okta_authenticator)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "AND (r.data.org_name = $org OR o.entity_type = $org)",
+                "RETURN p.data.name AS policy, r.data.name AS rule, a.data.name AS authenticator, a.data.authenticator_key AS authenticator_key, e.data.properties.constraint AS constraint, e.data.properties.phishing_resistant AS phishing_resistant, e.data.properties.hardware_protected AS hardware_protected",
+                "ORDER BY policy"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bcde2d6d067",
+            "entity_type": "panel",
+            "name": "Authenticators each rule requires",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-rule-authenticators",
+            "name": "Authenticators each rule requires",
+            "description": "Which authenticators satisfy each sign-on rule, and under what constraint. A rule that should demand phishing-resistant MFA and does not is visible here as a row without the tick; a rule with no rows here requires no specific authenticator (check its factor mode above).",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 360,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "policy",
+                  "title": "Policy",
+                  "header_tooltip": "The policy the rule belongs to.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "rule",
+                  "title": "Rule",
+                  "header_tooltip": "The rule.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "authenticator",
+                  "title": "Authenticator",
+                  "header_tooltip": "The authenticator that satisfies the rule.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "authenticator_key",
+                  "title": "Key",
+                  "header_tooltip": "Okta's authenticator key (okta_verify, webauthn, duo, ...).",
+                  "headerSort": true,
+                  "width": 140
+                },
+                {
+                  "field": "constraint",
+                  "title": "Constraint",
+                  "header_tooltip": "Which factor class it satisfies here: possession, knowledge or inherence.",
+                  "headerSort": true,
+                  "width": 120
+                },
+                {
+                  "field": "phishing_resistant",
+                  "title": "Phishing-resistant",
+                  "header_tooltip": "The rule demands a phishing-resistant method of this class.",
+                  "headerSort": true,
+                  "width": 160,
+                  "align": "center",
+                  "formatter": "tickCross"
+                },
+                {
+                  "field": "hardware_protected",
+                  "title": "Hardware-bound",
+                  "header_tooltip": "The rule demands a hardware-protected key.",
+                  "headerSort": true,
+                  "width": 150,
+                  "align": "center",
+                  "formatter": "tickCross"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bcffb6c075c",
+            "entity_type": "search",
+            "name": "okta — authenticators in the org",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — authenticators in the org",
+            "description": "Every okta__okta_authenticator of the org. Envelope mode.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (n:okta__okta_authenticator)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "RETURN n"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bd09d55e8ff",
+            "entity_type": "panel",
+            "name": "Authenticators",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-authenticators",
+            "name": "Authenticators",
+            "description": "The authenticators the org has configured, including any that hand verification to another service (Duo, an external IdP). What each is for is decided by the enrollment policies and the rules above.",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 300,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "data.name",
+                  "title": "Authenticator",
+                  "header_tooltip": "The authenticator's name.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "data.authenticator_key",
+                  "title": "Key",
+                  "header_tooltip": "Okta's key.",
+                  "headerSort": true,
+                  "width": 160
+                },
+                {
+                  "field": "data.authenticator_type",
+                  "title": "Type",
+                  "header_tooltip": "app, password, email, phone, security_key, federated ...",
+                  "headerSort": true,
+                  "width": 140
+                },
+                {
+                  "field": "data.phishing_resistant",
+                  "title": "Phishing-resistant",
+                  "header_tooltip": "Can satisfy a phishing-resistant constraint. Blank is not observed.",
+                  "headerSort": true,
+                  "width": 160,
+                  "align": "center",
+                  "formatter": "tickCross"
+                },
+                {
+                  "field": "data.status",
+                  "title": "Status",
+                  "header_tooltip": "Okta's authenticator status.",
+                  "headerSort": true,
+                  "width": 110,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "ACTIVE": "good",
+                      "INACTIVE": "muted"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bd234ba1a6b",
+            "entity_type": "search",
+            "name": "okta — enrollment policy requirements",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — enrollment policy requirements",
+            "description": "Each ENROLLS_AUTHENTICATOR__okta edge from an enrollment (MFA_ENROLL) policy. PROJECTION mode.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p:okta__okta_policy)-[e:ENROLLS_AUTHENTICATOR__okta]->(a:okta__okta_authenticator)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "RETURN p.data.name AS policy, p.data.priority AS priority, a.data.name AS authenticator, e.data.properties.enroll AS enroll",
+                "ORDER BY policy"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bd3133771f1",
+            "entity_type": "panel",
+            "name": "Authenticator enrollment policies",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-enrollment",
+            "name": "Authenticator enrollment policies",
+            "description": "What each enrollment policy makes users set up: REQUIRED authenticators are enforced at sign-in until enrolled. An authenticator that is OPTIONAL everywhere is one most users will never have.",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 300,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "policy",
+                  "title": "Policy",
+                  "header_tooltip": "The enrollment policy.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "priority",
+                  "title": "#",
+                  "header_tooltip": "Order among enrollment policies (1 first).",
+                  "headerSort": true,
+                  "width": 60,
+                  "align": "right"
+                },
+                {
+                  "field": "authenticator",
+                  "title": "Authenticator",
+                  "header_tooltip": "The authenticator.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "enroll",
+                  "title": "Enrollment",
+                  "header_tooltip": "REQUIRED, OPTIONAL or NOT_ALLOWED.",
+                  "headerSort": true,
+                  "width": 140,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "REQUIRED": "good",
+                      "OPTIONAL": "warn",
+                      "NOT_ALLOWED": "muted"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bd55516d3d3",
+            "entity_type": "search",
+            "name": "okta — users not active",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — users not active",
+            "description": "Every okta__okta_user of the org whose status is not ACTIVE, blank (not observed) included. Envelope mode.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (n:okta__okta_user)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "AND n.data.status != \"ACTIVE\"",
+                "RETURN n"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bd67383ad32",
+            "entity_type": "panel",
+            "name": "Users who are not active",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-users-attention",
+            "name": "Users who are not active",
+            "description": "Every account whose lifecycle status is anything but ACTIVE: locked out, suspended, awaiting activation, in recovery, or deprovisioned but still present. A blank status is an account whose status was not observed, and is listed here on purpose.",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 360,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "data.login",
+                  "title": "Login",
+                  "header_tooltip": "The Okta login.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "data.display_name",
+                  "title": "Name",
+                  "header_tooltip": "The display name.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "data.status",
+                  "title": "Status",
+                  "header_tooltip": "Okta's lifecycle status.",
+                  "headerSort": true,
+                  "width": 170,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "ACTIVE": "good",
+                      "LOCKED_OUT": "bad",
+                      "SUSPENDED": "warn",
+                      "PASSWORD_EXPIRED": "warn",
+                      "RECOVERY": "warn",
+                      "STAGED": "muted",
+                      "PROVISIONED": "muted",
+                      "DEPROVISIONED": "muted"
+                    }
+                  }
+                },
+                {
+                  "field": "data.status_changed_at",
+                  "title": "In this status since",
+                  "header_tooltip": "When the account entered its current status.",
+                  "headerSort": true,
+                  "width": 200,
+                  "formatter": "datetime"
+                },
+                {
+                  "field": "data.last_login_at",
+                  "title": "Last sign-in",
+                  "header_tooltip": "Okta's lastLogin. Blank: never signed in, or not observed.",
+                  "headerSort": true,
+                  "width": 200,
+                  "formatter": "datetime"
+                },
+                {
+                  "field": "data.user_type",
+                  "title": "User type",
+                  "header_tooltip": "The Okta user type.",
+                  "headerSort": true,
+                  "width": 120
+                }
+              ]
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bd83270134c",
+            "entity_type": "search",
+            "name": "okta — users with last sign-in",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — users with last sign-in",
+            "description": "Every okta__okta_user of the org. Envelope mode; sorted client-side (Gryphon refuses ORDER BY on a traversal).",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (n:okta__okta_user)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "RETURN n"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bd901560967",
+            "entity_type": "panel",
+            "name": "Sign-in recency",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-users-sign-in",
+            "name": "Sign-in recency",
+            "description": "Every account in the org with its last sign-in, so a stale account (active, but not used in months) sorts to the top: click the Last sign-in heading. Blank last sign-in is never-signed-in or not observed; the collector records which.",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 420,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "data.login",
+                  "title": "Login",
+                  "header_tooltip": "The Okta login.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "data.status",
+                  "title": "Status",
+                  "header_tooltip": "Okta's lifecycle status.",
+                  "headerSort": true,
+                  "width": 170,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "ACTIVE": "good",
+                      "LOCKED_OUT": "bad",
+                      "SUSPENDED": "warn",
+                      "PASSWORD_EXPIRED": "warn",
+                      "RECOVERY": "warn",
+                      "STAGED": "muted",
+                      "PROVISIONED": "muted",
+                      "DEPROVISIONED": "muted"
+                    }
+                  }
+                },
+                {
+                  "field": "data.last_login_at",
+                  "title": "Last sign-in",
+                  "header_tooltip": "Okta's lastLogin.",
+                  "headerSort": true,
+                  "width": 200,
+                  "formatter": "datetime"
+                },
+                {
+                  "field": "data.password_changed_at",
+                  "title": "Password changed",
+                  "header_tooltip": "Okta's passwordChanged.",
+                  "headerSort": true,
+                  "width": 200,
+                  "formatter": "datetime"
+                },
+                {
+                  "field": "data.created_at",
+                  "title": "Created",
+                  "header_tooltip": "When the account was created.",
+                  "headerSort": true,
+                  "width": 200,
+                  "formatter": "datetime"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bdb81a6994c",
+            "entity_type": "search",
+            "name": "okta — API tokens",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — API tokens",
+            "description": "Every okta__okta_api_token of the org. Envelope mode. The owner (ACTS_AS_USER__okta) is not joined: OPTIONAL MATCH v0 needs a single-node mandatory MATCH, and a required join would hide the tokens whose owner was not observed.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (n:okta__okta_api_token)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "RETURN n"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bdc706fe8e8",
+            "entity_type": "panel",
+            "name": "API tokens",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-api-tokens",
+            "name": "API tokens",
+            "description": "Okta API tokens: long-lived secrets that act with the admin permissions of the user who created them, at the moment of each call. A token that can be used from anywhere, belonging to a super administrator, is a standing super-admin credential. Who each token acts as is its ACTS_AS_USER edge; Gryphon cannot yet join an optional owner into this row.",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 300,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "data.name",
+                  "title": "Token",
+                  "header_tooltip": "The token's name.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "data.client_name",
+                  "title": "Created from",
+                  "header_tooltip": "The client Okta recorded at creation.",
+                  "headerSort": true,
+                  "width": 180
+                },
+                {
+                  "field": "data.network_connection",
+                  "title": "Usable from",
+                  "header_tooltip": "ANYWHERE, or only from listed network zones.",
+                  "headerSort": true,
+                  "width": 130,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "ANYWHERE": "warn",
+                      "ZONE": "good"
+                    }
+                  }
+                },
+                {
+                  "field": "data.created_at",
+                  "title": "Created",
+                  "header_tooltip": "When the token was created.",
+                  "headerSort": true,
+                  "width": 200,
+                  "formatter": "datetime"
+                },
+                {
+                  "field": "data.expires_at",
+                  "title": "Expires",
+                  "header_tooltip": "Okta moves expiry forward on every use and a token expires after 30 days unused, so an expiry close to now means the token has not been used for most of a month. The API reports no last-used time.",
+                  "headerSort": true,
+                  "width": 200,
+                  "formatter": "datetime"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bde3ce915db",
+            "entity_type": "search",
+            "name": "okta — identity providers",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — identity providers",
+            "description": "Every okta__okta_identity_provider of the org. Envelope mode.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (n:okta__okta_identity_provider)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "RETURN n"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bdf6195cf74",
+            "entity_type": "panel",
+            "name": "Inbound federation",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-identity-providers",
+            "name": "Inbound federation",
+            "description": "External identity providers Okta accepts sign-ins from. An IdP that auto-links assertions to existing accounts can sign in as those users, which is how inbound federation was used to take over orgs in 2023; routing rules decide which users it is offered to.",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 300,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "data.name",
+                  "title": "Identity provider",
+                  "header_tooltip": "The IdP's name.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "data.idp_type",
+                  "title": "Type",
+                  "header_tooltip": "SAML2, OIDC, OKTA (org-to-org), MICROSOFT, GOOGLE, X509 ...",
+                  "headerSort": true,
+                  "width": 130
+                },
+                {
+                  "field": "data.status",
+                  "title": "Status",
+                  "header_tooltip": "Okta's IdP status.",
+                  "headerSort": true,
+                  "width": 110,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "ACTIVE": "good",
+                      "INACTIVE": "muted"
+                    }
+                  }
+                },
+                {
+                  "field": "data.provisioning_action",
+                  "title": "JIT provisioning",
+                  "header_tooltip": "AUTO: assertions create users Okta has never seen.",
+                  "headerSort": true,
+                  "width": 150,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "AUTO": "warn",
+                      "DISABLED": "good"
+                    }
+                  }
+                },
+                {
+                  "field": "data.account_link_action",
+                  "title": "Account linking",
+                  "header_tooltip": "AUTO: assertions sign in as EXISTING users matched by the subject rule.",
+                  "headerSort": true,
+                  "width": 150,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "AUTO": "bad",
+                      "DISABLED": "good"
+                    }
+                  }
+                },
+                {
+                  "field": "data.subject_match_type",
+                  "title": "Matched on",
+                  "header_tooltip": "How the assertion's subject is matched to a user.",
+                  "headerSort": true,
+                  "width": 170
+                }
+              ]
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6be1500b239f",
+            "entity_type": "search",
+            "name": "okta — authorization servers",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — authorization servers",
+            "description": "Every okta__okta_authorization_server of the org. Envelope mode.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (n:okta__okta_authorization_server)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "RETURN n"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6be260b8c543",
+            "entity_type": "panel",
+            "name": "Authorization servers",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-authorization-servers",
+            "name": "Authorization servers",
+            "description": "The OAuth 2.0 / OIDC authorization servers that mint tokens for this org: the org server (Okta's own APIs, and apps that use the org URL as issuer) and any custom servers. Each is an OIDC issuer that relying services trust.",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 260,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "data.name",
+                  "title": "Server",
+                  "header_tooltip": "The server's name.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "data.server_kind",
+                  "title": "Kind",
+                  "header_tooltip": "org, default or custom.",
+                  "headerSort": true,
+                  "width": 110
+                },
+                {
+                  "field": "data.status",
+                  "title": "Status",
+                  "header_tooltip": "Okta's server status.",
+                  "headerSort": true,
+                  "width": 110,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "ACTIVE": "good",
+                      "INACTIVE": "muted"
+                    }
+                  }
+                },
+                {
+                  "field": "data.issuer_mode",
+                  "title": "Issuer domain",
+                  "header_tooltip": "ORG_URL, CUSTOM_URL or DYNAMIC.",
+                  "headerSort": true,
+                  "width": 140
+                },
+                {
+                  "field": "data.audiences",
+                  "title": "Audiences",
+                  "header_tooltip": "The audiences the server mints tokens for.",
+                  "headerSort": true,
+                  "widthGrow": 2,
+                  "formatter": "json"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6be4c7e49b9b",
+            "entity_type": "search",
+            "name": "okta — network zones",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — network zones",
+            "description": "Every okta__okta_network_zone of the org. Envelope mode.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (n:okta__okta_network_zone)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "RETURN n"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6be5930e1142",
+            "entity_type": "panel",
+            "name": "Network zones",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-network-zones",
+            "name": "Network zones",
+            "description": "Named networks the sign-on rules refer to, and the blocklists Okta applies before any policy runs. A rule that excludes a zone trusts everything outside it.",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 260,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "data.name",
+                  "title": "Zone",
+                  "header_tooltip": "The zone's name.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "data.zone_type",
+                  "title": "Type",
+                  "header_tooltip": "IP, DYNAMIC or DYNAMIC_V2.",
+                  "headerSort": true,
+                  "width": 120
+                },
+                {
+                  "field": "data.usage",
+                  "title": "Usage",
+                  "header_tooltip": "POLICY zones are named by rules; BLOCKLIST zones are refused outright.",
+                  "headerSort": true,
+                  "width": 120,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "BLOCKLIST": "bad",
+                      "POLICY": "muted"
+                    }
+                  }
+                },
+                {
+                  "field": "data.status",
+                  "title": "Status",
+                  "header_tooltip": "Okta's zone status.",
+                  "headerSort": true,
+                  "width": 110,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "ACTIVE": "good",
+                      "INACTIVE": "muted"
+                    }
+                  }
+                },
+                {
+                  "field": "data.gateways",
+                  "title": "Gateways",
+                  "header_tooltip": "IP ranges (IP zones).",
+                  "headerSort": true,
+                  "widthGrow": 2,
+                  "formatter": "json"
+                },
+                {
+                  "field": "data.system",
+                  "title": "Okta's own",
+                  "header_tooltip": "One of the zones Okta ships.",
+                  "headerSort": true,
+                  "width": 110,
+                  "align": "center",
+                  "formatter": "tickCross"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6be7242fb760",
+            "entity_type": "search",
+            "name": "okta — trusted origins",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — trusted origins",
+            "description": "Every okta__okta_trusted_origin of the org. Envelope mode.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (n:okta__okta_trusted_origin)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "RETURN n"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6be861a53f22",
+            "entity_type": "panel",
+            "name": "Trusted origins",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-trusted-origins",
+            "name": "Trusted origins",
+            "description": "Web origins Okta allows to call its APIs from a browser session (CORS), to redirect to after sign-in, or to embed Okta in an iframe. Every CORS origin widens where a signed-in session's API calls may come from.",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 260,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "data.name",
+                  "title": "Name",
+                  "header_tooltip": "The trusted origin's name.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "data.origin",
+                  "title": "Origin",
+                  "header_tooltip": "Scheme, host and port.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "data.scopes",
+                  "title": "Trusted for",
+                  "header_tooltip": "CORS, REDIRECT, IFRAME_EMBED.",
+                  "headerSort": true,
+                  "width": 220,
+                  "formatter": "json"
+                },
+                {
+                  "field": "data.status",
+                  "title": "Status",
+                  "header_tooltip": "Okta's status.",
+                  "headerSort": true,
+                  "width": 110,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "ACTIVE": "good",
+                      "INACTIVE": "muted"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bea6c255def",
+            "entity_type": "search",
+            "name": "okta — log streams",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — log streams",
+            "description": "Every okta__okta_log_stream of the org. Envelope mode.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (n:okta__okta_log_stream)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "RETURN n"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6beb23b3562f",
+            "entity_type": "panel",
+            "name": "System Log streaming",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "slug": "okta-log-streams",
+            "name": "System Log streaming",
+            "description": "Where the Okta System Log goes once it leaves Okta: an AWS EventBridge event source or Splunk Cloud. An org with no active stream here keeps its audit trail only in Okta's own 90-day retention, which a FedRAMP audit-logging requirement will not accept on its own.",
+            "view": "tap_web/panels/table_panel.html",
+            "editor_view": "",
+            "config": {
+              "hide_header": false,
+              "height": 220,
+              "quick_filter": true,
+              "default_page_size": 200,
+              "columns": [
+                {
+                  "field": "data.name",
+                  "title": "Stream",
+                  "header_tooltip": "The log stream's name.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                },
+                {
+                  "field": "data.stream_type",
+                  "title": "Type",
+                  "header_tooltip": "aws_eventbridge or splunk_cloud_logstreaming.",
+                  "headerSort": true,
+                  "width": 220
+                },
+                {
+                  "field": "data.status",
+                  "title": "Status",
+                  "header_tooltip": "Okta's status.",
+                  "headerSort": true,
+                  "width": 110,
+                  "align": "center",
+                  "formatter": "toneBadge",
+                  "formatter_params": {
+                    "tones": {
+                      "ACTIVE": "good",
+                      "INACTIVE": "muted"
+                    }
+                  }
+                },
+                {
+                  "field": "data.destination",
+                  "title": "Destination",
+                  "header_tooltip": "Where it lands, in the destination's own words.",
+                  "headerSort": true,
+                  "widthGrow": 2
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "edges": [
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc6f9a9665e",
+            "entity_type": "edge",
+            "name": "okta graph panel USES_PROJECTION okta org projection",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb48af52d57",
+            "edge_type": "USES_PROJECTION",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc7984a61e9",
+            "entity_type": "edge",
+            "name": "okta org projection USES_ELEVATION okta org elevation",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb48af52d57",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb58a9db10f",
+            "edge_type": "USES_ELEVATION",
+            "properties": {
+              "hotlink": {
+                "model": "projection",
+                "spec": "projection-elevations",
+                "value": "01a0cc72-bb1c-71a6-9bbe-cbb58a9db10f"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc8c71d22e2",
+            "entity_type": "edge",
+            "name": "okta org projection USES_DEFAULT_ELEVATION okta org elevation",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb48af52d57",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb58a9db10f",
+            "edge_type": "USES_DEFAULT_ELEVATION",
+            "properties": {
+              "hotlink": {
+                "model": "projection",
+                "spec": "projection-default-elevation",
+                "value": "01a0cc72-bb1c-71a6-9bbe-cbb58a9db10f"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc9b34d3871",
+            "entity_type": "edge",
+            "name": "okta org elevation USES_LAYOUT okta org layout",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb58a9db10f",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb6a7b48100",
+            "edge_type": "USES_LAYOUT",
+            "properties": {
+              "hotlink": {
+                "model": "elevation",
+                "spec": "elevation-layouts",
+                "value": "01a0cc72-bb1c-71a6-9bbe-cbb6a7b48100"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbca5503adeb",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-org",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb7a62fa71d",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbcb9642a383",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-members",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb8f55a413f",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbcc4801d421",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-assigned-application",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb9aad07bc1",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbcd942c8b36",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-bound-to-policy",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbbae1b6e8ff",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbceaf56e763",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-evaluates-rule",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbbbf7f626cf",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbcf20cdbecb",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-requires-authenticator",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbbcf676de9e",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbd037f709af",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-enrolls-authenticator",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbbdbb85663e",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbd1671297bb",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-applies-to-group",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbbeaf57eb44",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbd2929e28be",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-routes-authentication",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbbf5b77f293",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbd39b6fbbb6",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-assigns-group-membership",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc092e2c763",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbd401e30fab",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-holds-role-assignment",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc1015bb260",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbd53a673140",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-grants-admin-role",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc2880988f2",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbd6e3afb7e9",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-scoped-to-resource",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc3cdbcb4ad",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbd7332cfa40",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-imports-group",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc448230cce",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbd8bda4009c",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-matches-network-zone",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc5bb18866c",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbdbe815cd59",
+            "entity_type": "edge",
+            "name": "okta applications panel USES_SEARCH applications",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbdac3b184e6",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbd904972981",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bc5fdc3dc88",
+            "entity_type": "edge",
+            "name": "okta assignments panel USES_SEARCH assignments",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1d-7622-8104-6bc4bef0cf4a",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bc3e68eca81",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bc853e5cf92",
+            "entity_type": "edge",
+            "name": "okta admin-roles panel USES_SEARCH admin-roles",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1d-7622-8104-6bc76d76a068",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bc688666c47",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bcb82576ac9",
+            "entity_type": "edge",
+            "name": "okta sign-on-rules panel USES_SEARCH sign-on-rules",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1d-7622-8104-6bca3cbae75b",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bc97339124a",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bce109c1ded",
+            "entity_type": "edge",
+            "name": "okta rule-authenticators panel USES_SEARCH rule-authenticators",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1d-7622-8104-6bcde2d6d067",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bccc78cf7b7",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bd151fec71b",
+            "entity_type": "edge",
+            "name": "okta authenticators panel USES_SEARCH authenticators",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1d-7622-8104-6bd09d55e8ff",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bcffb6c075c",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bd4c2316044",
+            "entity_type": "edge",
+            "name": "okta enrollment panel USES_SEARCH enrollment",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1d-7622-8104-6bd3133771f1",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bd234ba1a6b",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bd7adb1434d",
+            "entity_type": "edge",
+            "name": "okta users-attention panel USES_SEARCH users-attention",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1d-7622-8104-6bd67383ad32",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bd55516d3d3",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bdad63ac3be",
+            "entity_type": "edge",
+            "name": "okta users-sign-in panel USES_SEARCH users-sign-in",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1d-7622-8104-6bd901560967",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bd83270134c",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bddaafd7dfc",
+            "entity_type": "edge",
+            "name": "okta api-tokens panel USES_SEARCH api-tokens",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1d-7622-8104-6bdc706fe8e8",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bdb81a6994c",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6be0e6d66ccd",
+            "entity_type": "edge",
+            "name": "okta identity-providers panel USES_SEARCH identity-providers",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1d-7622-8104-6bdf6195cf74",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bde3ce915db",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6be370889c0c",
+            "entity_type": "edge",
+            "name": "okta authorization-servers panel USES_SEARCH authorization-servers",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1d-7622-8104-6be260b8c543",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6be1500b239f",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6be6253f48fb",
+            "entity_type": "edge",
+            "name": "okta network-zones panel USES_SEARCH network-zones",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1d-7622-8104-6be5930e1142",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6be4c7e49b9b",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6be9a5a75fb8",
+            "entity_type": "edge",
+            "name": "okta trusted-origins panel USES_SEARCH trusted-origins",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1d-7622-8104-6be861a53f22",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6be7242fb760",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bec5d7468ae",
+            "entity_type": "edge",
+            "name": "okta log-streams panel USES_SEARCH log-streams",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1d-7622-8104-6beb23b3562f",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bea6c255def",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bedf3ae0bd4",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL org-graph",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "org-graph"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bee43db29e6",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL applications",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbdac3b184e6",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "applications"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6befc5a4cbf3",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL assignments",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bc4bef0cf4a",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "assignments"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bf0b4cf2fb6",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL admin-roles",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bc76d76a068",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "admin-roles"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bf13045e62c",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL sign-on-rules",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bca3cbae75b",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "sign-on-rules"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bf2e5106ac8",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL rule-authenticators",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bcde2d6d067",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "rule-authenticators"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bf363562f61",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL authenticators",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bd09d55e8ff",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "authenticators"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bf4125de1d3",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL enrollment",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bd3133771f1",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "enrollment"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bf5b3a6f02a",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL users-attention",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bd67383ad32",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "users-attention"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bf65214fc6c",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL users-sign-in",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bd901560967",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "users-sign-in"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bf7b89668d1",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL api-tokens",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bdc706fe8e8",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "api-tokens"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bf84c83a3ad",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL identity-providers",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6bdf6195cf74",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "identity-providers"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bf932cc0300",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL authorization-servers",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6be260b8c543",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "authorization-servers"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bfa579de01a",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL network-zones",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6be5930e1142",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "network-zones"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bfbcd454a37",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL trusted-origins",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6be861a53f22",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "trusted-origins"
+              }
+            }
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0cc72-bb1d-7622-8104-6bfc91028f6b",
+            "entity_type": "edge",
+            "name": "okta page USES_PANEL log-streams",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb2b2357593",
+            "to_entity_id": "01a0cc72-bb1d-7622-8104-6beb23b3562f",
+            "edge_type": "USES_PANEL",
+            "properties": {
+              "hotlink": {
+                "model": "page",
+                "spec": "page-panels",
+                "value": "log-streams"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

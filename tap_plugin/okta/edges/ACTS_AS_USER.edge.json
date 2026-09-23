@@ -1,0 +1,11 @@
+{
+  "slug": "ACTS_AS_USER__okta",
+  "name": "Acts As User",
+  "description": "An API token authenticates as the user who created it and carries that user's admin permissions at the moment of each call. Deactivating the user revokes the token.",
+  "sources": [
+    "okta__okta_api_token"
+  ],
+  "targets": [
+    "okta__okta_user"
+  ]
+}

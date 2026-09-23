@@ -1,0 +1,11 @@
+{
+  "slug": "IMPORTS_GROUP__okta",
+  "name": "Imports Group",
+  "description": "An application masters a group that Okta imports from it (Active Directory, LDAP, an HR system): the group's membership is decided in the application, not in Okta. The source of an APP_GROUP.",
+  "sources": [
+    "okta__okta_application"
+  ],
+  "targets": [
+    "okta__okta_group"
+  ]
+}

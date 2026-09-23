@@ -1,0 +1,28 @@
+{
+  "slug": "MATCHES_NETWORK_ZONE__okta",
+  "name": "Matches Network Zone",
+  "description": "A policy rule's network condition names a zone, to include or exclude requests from it.",
+  "sources": [
+    "okta__okta_policy_rule"
+  ],
+  "targets": [
+    "okta__okta_network_zone"
+  ],
+  "property_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "mode": {
+        "type": "string",
+        "enum": [
+          "include",
+          "exclude"
+        ],
+        "description": "Whether the condition includes or excludes the far node. An exclusion is as load-bearing as an inclusion: an excluded group is exactly who the rule does not protect."
+      }
+    },
+    "required": [
+      "mode"
+    ]
+  }
+}

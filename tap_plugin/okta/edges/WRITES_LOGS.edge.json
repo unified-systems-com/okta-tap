@@ -1,0 +1,8 @@
+{
+  "slug": "WRITES_LOGS__okta",
+  "name": "Writes Logs",
+  "description": "A log stream writes the System Log to its destination (an AWS EventBridge partner event source, a Splunk HTTP Event Collector). The target is OPEN (omitted): the destination is another plugin's node, when it is modelled at all. Action and data both flow forward.",
+  "sources": [
+    "okta__okta_log_stream"
+  ]
+}
