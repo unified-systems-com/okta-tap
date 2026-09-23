@@ -53,6 +53,8 @@ def _seed_org(s: _Seed) -> None:
     s.node("acme", f"{P}org", name="acme", service_offering="okta_for_government_high")
     s.node("other", f"{P}org", name="other")
     s.node("other-app", f"{P}application", "other", org_name="other", label="Other app")
+    s.node("other-group", f"{P}group", "other", org_name="other", name="Other group")
+    s.node("other-role", f"{P}admin_role", "other", org_name="other", name="Other role")
     o = {"org": "acme", "org_name": "acme"}
 
     def n(key: str, t: str, **kw: Any) -> str:
@@ -97,6 +99,11 @@ def _seed_org(s: _Seed) -> None:
     s.edge(i["ad"], i["adgroup"], "IMPORTS_GROUP__okta")
     s.edge(i["routing"], i["route"], "EVALUATES_RULE__okta", {"priority": 1})
     s.edge(i["route"], i["idp"], "ROUTES_AUTHENTICATION__okta")
+    # Cross-org edges nothing should draw on acme's page: a foreign group assigned acme's app,
+    # holding acme's assignment, and acme's assignment granting a foreign role.
+    s.edge(i["other-group"], i["teleport"], "ASSIGNED_APPLICATION__okta")
+    s.edge(i["other-group"], i["ra"], "HOLDS_ROLE_ASSIGNMENT__okta")
+    s.edge(i["ra"], i["other-role"], "GRANTS_ADMIN_ROLE__okta")
 
 
 def test_bundle_is_registered_and_names_its_layout() -> None:
@@ -128,7 +135,7 @@ def test_graph_is_icon_badge_and_names_every_edge_type() -> None:
     for s in _nodes("search"):
         q = " ".join(s["node"]["definition"]["query"])
         assert "-[]" not in q and "-[e]" not in q, s["entity"]["name"]
-        assert s["node"]["input_schema"]["properties"]["org"]["default"] == ""
+        assert s["node"]["input_schema"]["properties"]["org"]["default"] == "okta__okta_org"
 
 
 def test_no_entity_id_outside_the_bundle() -> None:
@@ -150,7 +157,7 @@ def test_every_search_answers_for_one_org() -> None:
     assert grift_import(_bundle()).success
     s = _Seed()
     _seed_org(s)
-    other_ids = {s.ids["other"], s.ids["other-app"]}
+    other_ids = {s.ids[k] for k in ("other", "other-app", "other-group", "other-role")}
     for spec in _nodes("search"):
         search = Search.objects.get(entity_id=spec["entity"]["entity_id"])
         env = execute_search(search, inputs={"org": "acme"})
@@ -159,6 +166,8 @@ def test_every_search_answers_for_one_org() -> None:
         assert got > 0, f"{search.name}: nothing for the seeded org"
         ids = {str(n["entity_id"]) for n in env.get("nodes", [])}
         assert not ids & other_ids, f"{search.name}: leaked another org's nodes"
+        flat = json.dumps(env.get("rows", []))
+        assert "Other group" not in flat and "Other role" not in flat, f"{search.name}: leaked another org's rows"
 
 
 @READS_THROUGH_GRYPHON
@@ -173,9 +182,29 @@ def test_absent_org_means_every_org() -> None:
     _seed_org(s)
     (apps,) = [n for n in _nodes("search") if n["entity"]["name"] == "okta — applications in the org"]
     search = Search.objects.get(entity_id=apps["entity"]["entity_id"])
-    every = execute_search(search, inputs={})
+    every = execute_search(search, inputs={})  # schema default: the every-org sentinel
     every = every.get("results", every)
     assert {n["name"] for n in every["nodes"]} == {"Teleport", "Active Directory", "Other app"}
     one = execute_search(search, inputs={"org": "other"})
     one = one.get("results", one)
     assert {n["name"] for n in one["nodes"]} == {"Other app"}
+
+
+@READS_THROUGH_GRYPHON
+def test_org_name_is_matched_exactly() -> None:
+    """req-okta-page-org-5: ?org=a does not also match an org named aba."""
+    from tap_grid.grift import grift_import
+    from tap_grid.models import Search
+    from tap_grid.search import execute_search
+
+    assert grift_import(_bundle()).success
+    s = _Seed()
+    s.node("a", "okta__okta_org", name="a")
+    s.node("aba", "okta__okta_org", name="aba")
+    s.node("a-app", "okta__okta_application", "a", org_name="a", label="A app")
+    s.node("aba-app", "okta__okta_application", "aba", org_name="aba", label="ABA app")
+    (apps,) = [n for n in _nodes("search") if n["entity"]["name"] == "okta — applications in the org"]
+    search = Search.objects.get(entity_id=apps["entity"]["entity_id"])
+    one = execute_search(search, inputs={"org": "a"})
+    one = one.get("results", one)
+    assert {n["name"] for n in one["nodes"]} == {"A app"}

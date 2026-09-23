@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "okta CI record (req-boot-bootstrap-ci-record): the stack this plugin's own tests run in. Installs the depends_on closure (identity_core, the vocabulary dependency behind SERVES_ISSUER__okta) and self; the consumer flips self to editable so the checkout under test runs, not the pinned revision. Population seeds the plugin's own GRIFT (the /okta page), which proves the bundle parses and its searches and panels resolve against a real registry. Deliberately excluded: every other plugin, all credentials, anything that reaches the network.",
+  "description": "okta CI record (req-boot-bootstrap-ci-record): the stack this plugin's own tests run in. Installs the depends_on closure (identity_core, the vocabulary dependency behind SERVES_ISSUER__okta, from git at a pinned commit) and self; the consumer flips self to editable so the checkout under test runs, not the pinned revision. Population seeds the plugin's own GRIFT (the /okta page), which proves the bundle parses and its searches and panels resolve against a real registry. Installation fetches the two pinned git sources; nothing after installation reaches the network, and no credential is used. Deliberately excluded: every plugin outside the depends_on closure.",
   "install": {
     "plugins": [
       {

@@ -141,7 +141,11 @@ question named in its schema description.
 - **Core permission union.** An edge type's `sources` / `targets` are not enforced for a node type that
   declares no `OUTBOUND_EDGES` / `INBOUND_EDGES` (`tap_grid/constraints.py`, `validate_edge`); the okta
   tests assert the declaration rather than a refusal.
-- **Gryphon optional filter** (tap#360): the page scopes by org name with `STARTS_WITH` and `ENDS_WITH`,
-  because an entity id cannot be prefix-matched and a parameter cannot be tested for absence.
+- **Gryphon optional filter** (tap#360): the page matches the org by exact name, with the org type's
+  slug as an every-org sentinel default, because an entity id is a UUID foreign key (a blank default
+  fails validation, and it cannot be prefix-matched) and a parameter cannot be tested for absence.
+- **Gryphon variable reuse inside one pattern** does not unify: `(p)-[...]->(o)<-[...]-(p)` returned
+  rows whose second `p` was a different node (probed 2026-09-22). The page runs its paths org to org
+  instead; a wrong-answer candidate for `gryphon-fix-bug`.
 - **Gryphon OPTIONAL MATCH v0** needs a single-node mandatory MATCH, so the API-token and admin tables
   cannot join an optional owner or scope.
