@@ -1,0 +1,13 @@
+{
+  "slug": "SCOPED_TO_RESOURCE__okta",
+  "name": "Scoped To Resource",
+  "description": "A role assignment is limited to a scope: a resource set (custom roles) or target groups and applications (standard roles such as Group Administrator). No scope edge means the assignment covers the whole org, which is the dangerous case.",
+  "sources": [
+    "okta__okta_role_assignment"
+  ],
+  "targets": [
+    "okta__okta_resource_set",
+    "okta__okta_group",
+    "okta__okta_application"
+  ]
+}

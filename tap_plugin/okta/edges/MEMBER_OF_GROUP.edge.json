@@ -1,0 +1,27 @@
+{
+  "slug": "MEMBER_OF_GROUP__okta",
+  "name": "Member Of Group",
+  "description": "A user is a member of a group. The managed_by property says what put them there, because a membership a group rule or an identity provider maintains comes back if an admin removes it by hand.",
+  "sources": [
+    "okta__okta_user"
+  ],
+  "targets": [
+    "okta__okta_group"
+  ],
+  "property_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "managed_by": {
+        "type": "string",
+        "enum": [
+          "manual",
+          "group_rule",
+          "app_import",
+          "identity_provider"
+        ],
+        "description": "What maintains the membership. Absent means not observed, never 'manual'."
+      }
+    }
+  }
+}

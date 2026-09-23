@@ -1,0 +1,21 @@
+{
+  "slug": "EVALUATES_RULE__okta",
+  "name": "Evaluates Rule",
+  "description": "A policy evaluates its rules in priority order; the first rule whose conditions match decides. Containment: a rule exists only as part of its policy and retires with it.",
+  "sources": [
+    "okta__okta_policy"
+  ],
+  "targets": [
+    "okta__okta_policy_rule"
+  ],
+  "property_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "priority": {
+        "type": "integer",
+        "description": "The rule's position (1 first). Mirrors the rule's own priority field so a traversal can order without a join."
+      }
+    }
+  }
+}

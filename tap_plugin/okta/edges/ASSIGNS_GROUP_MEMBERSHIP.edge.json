@@ -1,0 +1,28 @@
+{
+  "slug": "ASSIGNS_GROUP_MEMBERSHIP__okta",
+  "name": "Assigns Group Membership",
+  "description": "A group rule or an identity provider places users into a group automatically: a rule when its expression matches, an IdP at Just-In-Time provisioning or every sign-in. One relationship (automatic membership) over two mechanisms; the action property says which IdP mode applies.",
+  "sources": [
+    "okta__okta_group_rule",
+    "okta__okta_identity_provider"
+  ],
+  "targets": [
+    "okta__okta_group"
+  ],
+  "property_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "RULE",
+          "ASSIGN",
+          "APPEND",
+          "SYNC"
+        ],
+        "description": "RULE for a group rule; for an IdP, Okta's policy.provisioning.groups.action: ASSIGN (at JIT only), APPEND (add on every sign-in), SYNC (add and remove to match the assertion)."
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "slug": "BELONGS_TO_ORG__okta",
+  "name": "Belongs To Org",
+  "description": "An Okta object lives in one Okta org (tenant). Every okta type but the org itself carries exactly one; it is what a page scoped to one org traverses (?org=<entity_id>). Membership, not containment: the edge points from the object to its org, like BELONGS_TO_ACCOUNT.",
+  "sources": [
+    "okta__okta_user",
+    "okta__okta_group",
+    "okta__okta_group_rule",
+    "okta__okta_application",
+    "okta__okta_authorization_server",
+    "okta__okta_identity_provider",
+    "okta__okta_authenticator",
+    "okta__okta_policy",
+    "okta__okta_policy_rule",
+    "okta__okta_network_zone",
+    "okta__okta_trusted_origin",
+    "okta__okta_admin_role",
+    "okta__okta_resource_set",
+    "okta__okta_role_assignment",
+    "okta__okta_api_token",
+    "okta__okta_device",
+    "okta__okta_log_stream"
+  ],
+  "targets": [
+    "okta__okta_org"
+  ]
+}

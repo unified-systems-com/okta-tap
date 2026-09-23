@@ -1,0 +1,29 @@
+{
+  "slug": "SENDS_ASSERTION__okta",
+  "name": "Sends Assertion",
+  "description": "An Okta application sends a SAML assertion or an OIDC ID token to a relying service, which signs the user in on the strength of it. The target is OPEN (omitted): the relying service's own node belongs to its own plugin (a Teleport cluster, a GitLab instance, an AWS account's IAM Identity Center), and naming those types here would make every new relying service an edit to this plugin. The relying service's trust in the Okta issuer is its own plugin's edge (TRUSTS_ISSUER__identity_core).",
+  "sources": [
+    "okta__okta_application"
+  ],
+  "property_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "protocol": {
+        "type": "string",
+        "enum": [
+          "saml2",
+          "oidc",
+          "ws_fed",
+          "swa",
+          "other"
+        ],
+        "description": "How the application signs the user in to the relying service."
+      },
+      "endpoint": {
+        "type": "string",
+        "description": "Where the assertion is sent: the SAML ACS URL or the OIDC redirect URI."
+      }
+    }
+  }
+}

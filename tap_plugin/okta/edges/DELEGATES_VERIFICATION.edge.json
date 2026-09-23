@@ -1,0 +1,29 @@
+{
+  "slug": "DELEGATES_VERIFICATION__okta",
+  "name": "Delegates Verification",
+  "description": "An authenticator hands verification to another service: the Duo authenticator redirects the user to Duo's prompt, an external-IdP authenticator to that IdP. The target is OPEN (omitted): the verifier is another plugin's node (duo's duo__duo_account today), and this plugin does not depend on it.",
+  "sources": [
+    "okta__okta_authenticator"
+  ],
+  "property_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "protocol": {
+        "type": "string",
+        "enum": [
+          "duo_universal_prompt",
+          "duo_web_sdk",
+          "oidc",
+          "saml2",
+          "other"
+        ],
+        "description": "How verification is handed over."
+      },
+      "api_hostname": {
+        "type": "string",
+        "description": "The verifier's API host (for Duo, api-XXXXXXXX.duosecurity.com or a Duo Federal host)."
+      }
+    }
+  }
+}

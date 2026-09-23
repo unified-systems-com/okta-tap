@@ -1,0 +1,29 @@
+{
+  "slug": "ENROLLS_AUTHENTICATOR__okta",
+  "name": "Enrolls Authenticator",
+  "description": "An authenticator enrollment policy (MFA_ENROLL) makes an authenticator required, optional or disallowed for the groups it applies to.",
+  "sources": [
+    "okta__okta_policy"
+  ],
+  "targets": [
+    "okta__okta_authenticator"
+  ],
+  "property_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enroll": {
+        "type": "string",
+        "enum": [
+          "REQUIRED",
+          "OPTIONAL",
+          "NOT_ALLOWED"
+        ],
+        "description": "Okta's settings.authenticators[].enroll.self."
+      }
+    },
+    "required": [
+      "enroll"
+    ]
+  }
+}
