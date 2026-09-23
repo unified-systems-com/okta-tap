@@ -22,6 +22,7 @@ Natural key: `org_name`, `name`. Group names are unique within an org; revisited
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - Group push to downstream applications (a group's membership pushed to an app) is Backlog (`req-okta-backlog-provisioning`).
 
 ## Neutrality
@@ -53,5 +54,4 @@ Documented path: `GET /api/v1/groups` (okta.groups.read); members by `GET /api/v
 - `okta_id` — Okta's own object id (for example 00u1a2b3c4). Blank until observed: a design node has none.
 - `group_type` — Okta's group type: mastered in Okta, imported from an application, or built in (Everyone).
 - `description` — profile.description.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

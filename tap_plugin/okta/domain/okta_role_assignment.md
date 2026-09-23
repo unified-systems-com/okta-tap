@@ -22,6 +22,7 @@ Natural key: `org_name`, `name`. Okta's assignment id is not knowable at design 
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - The capabilities a role implies (reset factors, manage apps) are not derived into edges as BloodHound does; that is a traversal a later view can compute.
 
 ## Neutrality
@@ -52,5 +53,4 @@ Documented path: `GET /api/v1/users/{id}/roles` and `/api/v1/groups/{id}/roles` 
 - `okta_id` — Okta's own object id (for example 00u1a2b3c4). Blank until observed: a design node has none.
 - `assignment_type` — Okta's assignmentType: to a user directly, to a group, or to a service app (CLIENT).
 - `status` — Okta's assignment status.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

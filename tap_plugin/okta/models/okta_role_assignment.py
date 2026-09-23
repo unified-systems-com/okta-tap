@@ -42,7 +42,6 @@ class OktaRoleAssignment(BaseModel):
         "okta_id": {"type": "string"},
         "assignment_type": {"type": "string", "enum": ["", "USER", "GROUP", "CLIENT"]},
         "status": {"type": "string", "enum": ["", "ACTIVE", "INACTIVE"]},
-        "configuration": {"type": "object"},
         "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
@@ -51,7 +50,6 @@ class OktaRoleAssignment(BaseModel):
         "okta_id": {"validation": "jsonschema", "schema": {"type": "string"}},
         "assignment_type": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "USER", "GROUP", "CLIENT"]}},
         "status": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "ACTIVE", "INACTIVE"]}},
-        "configuration": {"validation": "jsonschema", "schema": {"type": "object"}},
         "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "name"]
@@ -70,8 +68,6 @@ class OktaRoleAssignment(BaseModel):
     assignment_type = models.CharField(max_length=255, blank=True, default="")
     #: Okta's assignment status.
     status = models.CharField(max_length=255, blank=True, default="")
-    #: The remainder of the object as Okta returns it; nothing identity-bearing lives here.
-    configuration = models.JSONField(default=dict, blank=True)
     #: TAP's tag map.
     tags = models.JSONField(default=dict, blank=True)
 

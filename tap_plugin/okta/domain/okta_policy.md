@@ -22,6 +22,7 @@ Natural key: `org_name`, `policy_type`, `name`. Policy names are unique per type
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - Authorization-server access policies are Backlog (`req-okta-backlog-oauth-grants`).
 - Device assurance policies are Backlog (`req-okta-backlog-device-assurance`).
 
@@ -57,5 +58,4 @@ Documented path: `GET /api/v1/policies?type=<TYPE>` (okta.policies.read), one ca
 - `priority` — Evaluation order among policies of the same type (1 first). Null for types Okta does not order (ACCESS_POLICY).
 - `system` — True for the policy Okta ships and will not let you delete (the Default Policy). Null means not observed.
 - `description` — The policy's description.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

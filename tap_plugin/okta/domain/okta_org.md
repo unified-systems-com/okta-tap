@@ -21,6 +21,7 @@ Natural key: `name`. A design-phase org has no observed identifier, so its name 
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - The org's brands, custom domains, email templates and org-wide settings are configuration on the org, not nodes.
 - Okta's own infrastructure (cells, the okta-gov.com cell a FedRAMP High org lives in) is outside the model; `service_offering` records which offering hosts the org.
 
@@ -52,5 +53,4 @@ Documented path: `GET /api/v1/org` (org settings) needs a token that can read or
 - `org_domain` — The org's okta.com, okta-gov.com or custom domain, for example acme.okta-gov.com. Blank until observed.
 - `okta_id` — Okta's org id. Blank until observed.
 - `service_offering` — Which Okta offering hosts the org: commercial, Okta for Government Moderate, Okta for Government High (FedRAMP High) or Okta for DoD IL4. A design can know it; blank means not stated, never commercial.
-- `configuration` — The remainder of the org settings.
 - `tags` — TAP's tag map.

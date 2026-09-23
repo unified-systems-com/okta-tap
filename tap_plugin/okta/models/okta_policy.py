@@ -51,7 +51,6 @@ class OktaPolicy(BaseModel):
         "priority": {"type": ["integer", "null"]},
         "system": {"type": ["boolean", "null"]},
         "description": {"type": "string"},
-        "configuration": {"type": "object"},
         "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
@@ -63,7 +62,6 @@ class OktaPolicy(BaseModel):
         "priority": {"validation": "jsonschema", "schema": {"type": ["integer", "null"]}},
         "system": {"validation": "jsonschema", "schema": {"type": ["boolean", "null"]}},
         "description": {"validation": "jsonschema", "schema": {"type": "string"}},
-        "configuration": {"validation": "jsonschema", "schema": {"type": "object"}},
         "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "policy_type", "name"]
@@ -92,8 +90,6 @@ class OktaPolicy(BaseModel):
     system = models.BooleanField(null=True, blank=True)
     #: The policy's description.
     description = models.TextField(blank=True, default="")
-    #: The remainder of the object as Okta returns it; nothing identity-bearing lives here.
-    configuration = models.JSONField(default=dict, blank=True)
     #: TAP's tag map.
     tags = models.JSONField(default=dict, blank=True)
 

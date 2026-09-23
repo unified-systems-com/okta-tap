@@ -22,7 +22,8 @@ Natural key: `org_name`, `policy_type`, `policy_name`, `name`. Rule names are un
 
 ## Boundaries
 
-- Rule conditions other than people and network zones (risk, device, platform) stay in `configuration`.
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
+- Rule conditions other than people and network zones (risk, device, platform) are not stored in v0.
 
 ## Neutrality
 
@@ -57,5 +58,4 @@ Documented path: `GET /api/v1/policies/{id}/rules` (okta.policies.read).
 - `access` — The rule's access decision.
 - `factor_mode` — How many factor types the rule demands: ACCESS_POLICY verificationMethod.factorMode; for a global session rule, 2FA when requireFactor is true. Blank means not observed, never 'no MFA'.
 - `reauthenticate_in` — ISO-8601 duration before the user must re-verify (PT12H); blank when not observed.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

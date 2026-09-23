@@ -22,6 +22,7 @@ Natural key: `org_name`, `name`. Rule names are unique within an org; revisited 
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - The expression is kept verbatim; TAP does not evaluate Okta Expression Language.
 
 ## Neutrality
@@ -52,5 +53,4 @@ Documented path: `GET /api/v1/groups/rules` (okta.groups.read).
 - `okta_id` — Okta's own object id (for example 00u1a2b3c4). Blank until observed: a design node has none.
 - `status` — Okta's rule status. INVALID means the rule references something that no longer exists.
 - `expression` — conditions.expression.value: the Okta Expression Language condition.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

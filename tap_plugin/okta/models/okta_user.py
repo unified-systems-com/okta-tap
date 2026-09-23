@@ -48,7 +48,6 @@ class OktaUser(BaseModel):
         "last_login_at": {"type": ["string", "null"]},
         "password_changed_at": {"type": ["string", "null"]},
         "status_changed_at": {"type": ["string", "null"]},
-        "configuration": {"type": "object"},
         "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
@@ -64,7 +63,6 @@ class OktaUser(BaseModel):
         "last_login_at": {"validation": "jsonschema", "schema": {"type": ["string", "null"]}},
         "password_changed_at": {"validation": "jsonschema", "schema": {"type": ["string", "null"]}},
         "status_changed_at": {"validation": "jsonschema", "schema": {"type": ["string", "null"]}},
-        "configuration": {"validation": "jsonschema", "schema": {"type": "object"}},
         "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "login"]
@@ -92,15 +90,12 @@ class OktaUser(BaseModel):
     created_at = models.DateTimeField(null=True, blank=True)
     #: When the account was activated.
     activated_at = models.DateTimeField(null=True, blank=True)
-    #: Okta's lastLogin. Null means not observed OR never signed in; the collector records which in
-    #: configuration.
+    #: Okta's lastLogin. Null means not observed OR never signed in.
     last_login_at = models.DateTimeField(null=True, blank=True)
     #: Okta's passwordChanged.
     password_changed_at = models.DateTimeField(null=True, blank=True)
     #: Okta's statusChanged: when the account entered its current status.
     status_changed_at = models.DateTimeField(null=True, blank=True)
-    #: The remainder of the object as Okta returns it; nothing identity-bearing lives here.
-    configuration = models.JSONField(default=dict, blank=True)
     #: TAP's tag map.
     tags = models.JSONField(default=dict, blank=True)
 

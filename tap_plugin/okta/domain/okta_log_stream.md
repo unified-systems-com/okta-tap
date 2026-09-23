@@ -22,6 +22,7 @@ Natural key: `org_name`, `name`. Names are unique within an org; revisited to (o
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - System Log events themselves are not nodes; they are what a collector reads.
 
 ## Neutrality
@@ -53,5 +54,4 @@ Documented path: `GET /api/v1/logStreams` (okta.logStreams.read).
 - `stream_type` — Okta's log stream type.
 - `status` — Okta's status.
 - `destination` — Where the stream lands, in the destination's own words: an EventBridge event source (account, region, source name) or a Splunk host.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

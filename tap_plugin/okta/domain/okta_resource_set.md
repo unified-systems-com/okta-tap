@@ -22,7 +22,8 @@ Natural key: `org_name`, `name`. Labels are unique within an org; revisited to (
 
 ## Boundaries
 
-- 'All users' style members are recorded in `configuration`, not as an edge to every user.
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
+- 'All users' style members are not an edge to every user, and v0 does not store them.
 
 ## Neutrality
 
@@ -51,5 +52,4 @@ Documented path: `GET /api/v1/iam/resource-sets` (okta.roles.read).
 - `name` — The resource set's label.
 - `okta_id` — Okta's own object id (for example 00u1a2b3c4). Blank until observed: a design node has none.
 - `description` — The resource set's description.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

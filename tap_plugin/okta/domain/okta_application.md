@@ -23,6 +23,7 @@ Natural key: `org_name`, `label`. label is what an operator and a design name; O
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - Reply URIs are a field (`redirect_uris`), not nodes as in Cartography's ReplyUri: nothing but the application points at one.
 - Provisioning (SCIM push, import schedules, profile mappings) is Backlog (`req-okta-backlog-provisioning`).
 - Client secrets and signing keys are never stored.
@@ -61,5 +62,4 @@ Documented path: `GET /api/v1/apps` (okta.apps.read); assignments by `GET /api/v
 - `client_id` — For OIDC and service apps: the OAuth client_id (Okta uses the app id).
 - `redirect_uris` — OIDC redirect URIs or the SAML ACS URL(s). A field, not a node: nothing but the app points at a reply URI.
 - `grant_types` — OIDC/OAuth grant types the client may use.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

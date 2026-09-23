@@ -129,6 +129,26 @@ def test_enum_rejects_an_unknown_value() -> None:
     assert not bad.results[0].success
 
 
+@pytest.mark.parametrize("type_slug", MODEL_TYPES)
+def test_no_free_form_record(type_slug: str) -> None:
+    """req-okta-corpus-8: no type declares a free-form `configuration` field."""
+    model = _model(type_slug)
+    assert "configuration" not in model.FIELD_CRUD_SCHEMA
+    assert "configuration" not in model.FIELD_VALIDATION_SCHEMA
+    assert "configuration" not in {f.name for f in model._meta.get_fields()}
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("type_slug", MODEL_TYPES)
+def test_configuration_write_is_refused(type_slug: str) -> None:
+    """req-okta-corpus-8: a create_node write carrying `configuration` is refused, so a record cannot ride along."""
+    result = write_batch(
+        [WriteOperation(verb="create_node", type_slug=type_slug, payload=_sample(type_slug, configuration={"client_secret": "sentinel"}))],
+        caller_context=CallerContext(),
+    )
+    assert not result.results[0].success, type_slug
+
+
 @pytest.mark.django_db
 def test_same_name_in_two_orgs_is_two_nodes() -> None:
     """req-okta-corpus-2: org_name is part of every child key, so each org has its own Everyone group."""

@@ -42,7 +42,6 @@ class OktaNetworkZone(BaseModel):
         "system": {"type": ["boolean", "null"]},
         "gateways": {"type": "array", "items": {"type": "string"}},
         "proxies": {"type": "array", "items": {"type": "string"}},
-        "configuration": {"type": "object"},
         "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
@@ -55,7 +54,6 @@ class OktaNetworkZone(BaseModel):
         "system": {"validation": "jsonschema", "schema": {"type": ["boolean", "null"]}},
         "gateways": {"validation": "jsonschema", "schema": {"type": "array", "items": {"type": "string"}}},
         "proxies": {"validation": "jsonschema", "schema": {"type": "array", "items": {"type": "string"}}},
-        "configuration": {"validation": "jsonschema", "schema": {"type": "object"}},
         "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "name"]
@@ -82,8 +80,6 @@ class OktaNetworkZone(BaseModel):
     gateways = models.JSONField(default=list, blank=True)
     #: IP zone trusted proxy ranges.
     proxies = models.JSONField(default=list, blank=True)
-    #: The remainder of the object as Okta returns it; nothing identity-bearing lives here.
-    configuration = models.JSONField(default=dict, blank=True)
     #: TAP's tag map.
     tags = models.JSONField(default=dict, blank=True)
 

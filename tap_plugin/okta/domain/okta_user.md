@@ -23,8 +23,9 @@ Natural key: `org_name`, `login`. login is unique within an org and is what a de
 
 ## Boundaries
 
+- No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
 - The person behind the account is not modelled here: IDENTIFIES_PERSON points at a neutral person node when one exists.
-- Profile attributes beyond login, email and display name stay in `configuration`.
+- Profile attributes beyond login, email and display name are not stored.
 - The user type is a field (`user_type`); Cartography models it as a node, but nothing but the user points at it.
 
 ## Neutrality
@@ -60,8 +61,7 @@ Documented path: `GET /api/v1/users` (okta.users.read). The API's `lastLogin` is
 - `user_type` — The Okta user type's name (default 'user'). A field, not a node: nothing but the user points at it.
 - `created_at` — When Okta created the account.
 - `activated_at` — When the account was activated.
-- `last_login_at` — Okta's lastLogin. Null means not observed OR never signed in; the collector records which in configuration.
+- `last_login_at` — Okta's lastLogin. Null means not observed OR never signed in.
 - `password_changed_at` — Okta's passwordChanged.
 - `status_changed_at` — Okta's statusChanged: when the account entered its current status.
-- `configuration` — The remainder of the object as Okta returns it; nothing identity-bearing lives here.
 - `tags` — TAP's tag map.

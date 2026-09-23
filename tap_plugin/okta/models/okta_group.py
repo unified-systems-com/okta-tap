@@ -40,7 +40,6 @@ class OktaGroup(BaseModel):
         "okta_id": {"type": "string"},
         "group_type": {"type": "string", "enum": ["", "OKTA_GROUP", "APP_GROUP", "BUILT_IN"]},
         "description": {"type": "string"},
-        "configuration": {"type": "object"},
         "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
@@ -49,7 +48,6 @@ class OktaGroup(BaseModel):
         "okta_id": {"validation": "jsonschema", "schema": {"type": "string"}},
         "group_type": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "OKTA_GROUP", "APP_GROUP", "BUILT_IN"]}},
         "description": {"validation": "jsonschema", "schema": {"type": "string"}},
-        "configuration": {"validation": "jsonschema", "schema": {"type": "object"}},
         "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "name"]
@@ -68,8 +66,6 @@ class OktaGroup(BaseModel):
     group_type = models.CharField(max_length=255, blank=True, default="")
     #: profile.description.
     description = models.TextField(blank=True, default="")
-    #: The remainder of the object as Okta returns it; nothing identity-bearing lives here.
-    configuration = models.JSONField(default=dict, blank=True)
     #: TAP's tag map.
     tags = models.JSONField(default=dict, blank=True)
 
