@@ -105,7 +105,8 @@ An Okta org: one okta.com, okta-gov.com or custom-domain tenant. The node every 
 #### Implementation
 
 `tap_plugin/okta/models/okta_org.py` defines `OktaOrg(BaseModel)`, `ENTITY_TYPE = "okta__okta_org"`,
-`ENTITY_ICON = "okta-org"`, no default dimensions, fields `name` (required), `org_domain`, `okta_id`,
+`ENTITY_ICON = "okta-org"`, no default dimensions, fields `name` (required; the value `okta__okta_org`
+is refused because it is the /okta page's every-org sentinel), `org_domain`, `okta_id`,
 `service_offering` (`commercial`, `okta_for_government_moderate`, `okta_for_government_high`,
 `okta_for_dod_il4`, or blank = not stated), `configuration`, `tags`. `NATURAL_KEY = ("name",)`; revisited
 to `okta_id` with `req-okta-collector`. Article: `tap_plugin/okta/domain/okta_org.md`.
@@ -215,12 +216,16 @@ search. Every id is defined in the bundle; nothing names an org or an entity id 
   org's `entity_type` equals, so `?org` absent shows every org (the one org on a single-org grid). The
   parameter is the name, not the entity id: an entity id is a UUID foreign key, so a blank default fails
   UUID validation and Gryphon cannot test a parameter for absence (tap#360); the sentinel is the
-  workaround. An org literally named `okta__okta_org` would read as every org.
+  workaround. `okta__okta_org.name` refuses the sentinel, so it is never a real org's name.
 - **Both ends in the org.** A search that joins two Okta objects scopes each to the org
   (`(o)<-[:BELONGS_TO_ORG__okta]-(a)-[:EDGE]->(b)-[:BELONGS_TO_ORG__okta]->(o2)`, both filtered), so a
   cross-org edge never pulls a foreign group, role or rule onto this org's page. A pattern that reuses
   one variable to close the loop does not work in Gryphon (it does not unify the second binding), which
-  is why the path runs org to org.
+  is why the path runs org to org. A node in the middle of a longer path (the role assignment between
+  holder and role, the rule between policy and authenticator) cannot be routed through the org by a
+  linear pattern, so it is filtered on its own `org_name` column:
+  `(<v>.data.org_name = $org OR o.entity_type = $org)`, whose second disjunct is true exactly for the
+  sentinel.
 - **Graph** (`org-graph`, row height `66vh`). `tap_viz/panels/graph_panel.html` over the `okta org`
   projection (`node_style: icon-badge`, `lock_nodes`, `min_zoom: fit`), one elevation, one layout,
   `static/okta/js/projections/okta-org.js`. Fifteen scene searches: the org; what it holds (applications,
@@ -257,7 +262,7 @@ search. Every id is defined in the bundle; nothing names an org or an entity id 
 | req-okta-page-org-2 | Slots Match Panels | Implemented | One `USES_PANEL` per layout slot, graph first, slug `/okta`. | |
 | req-okta-page-org-3 | Icon-Badge, Named Edges | Implemented | The projection's `node_style` is `icon-badge`; no scene search matches an untyped edge; every search's `org` input defaults to the every-org sentinel. | |
 | req-okta-page-org-4 | Reusable | Implemented | Every id an edge names is defined in the bundle. | |
-| req-okta-page-org-5 | One Org At A Time | Implemented | Imported with a seeded org, a second org and cross-org edges between them, every search returns the seeded org's rows and none of the other's; `?org=a` does not match an org named `aba`; `?org` absent returns every org. | Real search path (`execute_search`), both databases. |
+| req-okta-page-org-5 | One Org At A Time | Implemented | Imported with a seeded org, a second org and cross-org edges between them (a foreign node at either end of a join, and in the middle of a longer path), every search returns the seeded org's rows and none of the other's; `?org=a` does not match an org named `aba`; `?org` absent returns every org; an org cannot be named the sentinel. | Real search path (`execute_search`), both databases. |
 | req-okta-page-org-6 | Layout Places Without Overlap | Implemented | Run headless over a seeded scene, the module draws every family, nests rules in policies, reports an unmapped type, and no top-level boxes overlap. | Exercised under JavaScriptCore with the vendored Cytoscape (2026-09-22); not a shipped test (no JS runner in CI). |
 | req-okta-page-org-7 | Renders In A Browser | In Development | `/okta` renders on a booted stack with every slot filled and no console error from the graph's layout. | Not observed: needs the stack booted with this plugin's migration and bundle, then `drive-browser`. |
 

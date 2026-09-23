@@ -48,7 +48,7 @@ Documented path: `GET /api/v1/org` (org settings) needs a token that can read or
 
 ## Fields
 
-- `name` — The org's name as the design or the operator knows it. The natural key, and the value every child's `org_name` carries.
+- `name` — The org's name as the design or the operator knows it. The natural key, and the value every child's `org_name` carries. The value `okta__okta_org` is refused: the /okta page uses the type's own slug as its every-org sentinel.
 - `org_domain` — The org's okta.com, okta-gov.com or custom domain, for example acme.okta-gov.com. Blank until observed.
 - `okta_id` — Okta's org id. Blank until observed.
 - `service_offering` — Which Okta offering hosts the org: commercial, Okta for Government Moderate, Okta for Government High (FedRAMP High) or Okta for DoD IL4. A design can know it; blank means not stated, never commercial.

@@ -35,7 +35,8 @@ class OktaOrg(BaseModel):
     }
 
     FIELD_CRUD_SCHEMA: ClassVar[dict[str, Any]] = {
-        "name": {"type": "string", "minLength": 1},
+        # The type slug is reserved: it is the /okta page's every-org sentinel (req-okta-page-org).
+        "name": {"type": "string", "minLength": 1, "not": {"const": "okta__okta_org"}},
         "org_domain": {"type": "string"},
         "okta_id": {"type": "string"},
         "service_offering": {"type": "string", "enum": ["", "commercial", "okta_for_government_moderate", "okta_for_government_high", "okta_for_dod_il4"]},
@@ -43,7 +44,7 @@ class OktaOrg(BaseModel):
         "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
-        "name": {"validation": "jsonschema", "schema": {"type": "string", "minLength": 1}},
+        "name": {"validation": "jsonschema", "schema": {"type": "string", "minLength": 1, "not": {"const": "okta__okta_org"}}},
         "org_domain": {"validation": "jsonschema", "schema": {"type": "string"}},
         "okta_id": {"validation": "jsonschema", "schema": {"type": "string"}},
         "service_offering": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "commercial", "okta_for_government_moderate", "okta_for_government_high", "okta_for_dod_il4"]}},

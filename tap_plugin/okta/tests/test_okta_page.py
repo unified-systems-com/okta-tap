@@ -55,6 +55,8 @@ def _seed_org(s: _Seed) -> None:
     s.node("other-app", f"{P}application", "other", org_name="other", label="Other app")
     s.node("other-group", f"{P}group", "other", org_name="other", name="Other group")
     s.node("other-role", f"{P}admin_role", "other", org_name="other", name="Other role")
+    s.node("other-ra", f"{P}role_assignment", "other", org_name="other", name="Other assignment", status="ACTIVE")
+    s.node("other-rule", f"{P}policy_rule", "other", org_name="other", policy_type="ACCESS_POLICY", policy_name="x", name="Other rule")
     o = {"org": "acme", "org_name": "acme"}
 
     def n(key: str, t: str, **kw: Any) -> str:
@@ -104,6 +106,11 @@ def _seed_org(s: _Seed) -> None:
     s.edge(i["other-group"], i["teleport"], "ASSIGNED_APPLICATION__okta")
     s.edge(i["other-group"], i["ra"], "HOLDS_ROLE_ASSIGNMENT__okta")
     s.edge(i["ra"], i["other-role"], "GRANTS_ADMIN_ROLE__okta")
+    # A foreign node in the MIDDLE of a path whose ends are both acme's.
+    s.edge(i["eng"], i["other-ra"], "HOLDS_ROLE_ASSIGNMENT__okta")
+    s.edge(i["other-ra"], i["role"], "GRANTS_ADMIN_ROLE__okta")
+    s.edge(i["policy"], i["other-rule"], "EVALUATES_RULE__okta", {"priority": 2})
+    s.edge(i["other-rule"], i["duo"], "REQUIRES_AUTHENTICATOR__okta", {"constraint": "possession"})
 
 
 def test_bundle_is_registered_and_names_its_layout() -> None:
@@ -157,7 +164,8 @@ def test_every_search_answers_for_one_org() -> None:
     assert grift_import(_bundle()).success
     s = _Seed()
     _seed_org(s)
-    other_ids = {s.ids[k] for k in ("other", "other-app", "other-group", "other-role")}
+    other_ids = {s.ids[k] for k in ("other", "other-app", "other-group", "other-role", "other-ra", "other-rule")}
+    foreign_names = ("Other group", "Other role", "Other assignment", "Other rule")
     for spec in _nodes("search"):
         search = Search.objects.get(entity_id=spec["entity"]["entity_id"])
         env = execute_search(search, inputs={"org": "acme"})
@@ -167,7 +175,7 @@ def test_every_search_answers_for_one_org() -> None:
         ids = {str(n["entity_id"]) for n in env.get("nodes", [])}
         assert not ids & other_ids, f"{search.name}: leaked another org's nodes"
         flat = json.dumps(env.get("rows", []))
-        assert "Other group" not in flat and "Other role" not in flat, f"{search.name}: leaked another org's rows"
+        assert not [n for n in foreign_names if n in flat], f"{search.name}: leaked another org's rows"
 
 
 @READS_THROUGH_GRYPHON
@@ -208,3 +216,10 @@ def test_org_name_is_matched_exactly() -> None:
     one = execute_search(search, inputs={"org": "a"})
     one = one.get("results", one)
     assert {n["name"] for n in one["nodes"]} == {"A app"}
+
+
+@pytest.mark.django_db
+def test_the_sentinel_is_not_an_org_name() -> None:
+    """req-okta-page-org-5: the every-org sentinel can never be a real org's name."""
+    r = write_batch([WriteOperation(verb="create_node", type_slug="okta__okta_org", payload={"name": "okta__okta_org"})], caller_context=CallerContext())
+    assert not r.results[0].success
