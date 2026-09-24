@@ -1,6 +1,6 @@
 manifest_version = "0"
 plugin_version = "0.1.0"
-requires_tap = ">=0.2.1"
+requires_tap = ">=0.2.2"
 slug = "okta"
 name = "TAP Okta"
 description = "Okta workforce identity as grid vocabulary: the org and the objects a FedRAMP operator answers for in it (users, groups, applications, authorization servers, identity providers, authenticators, policies, network zones, admin roles, API tokens, devices, log streams), with an org page."

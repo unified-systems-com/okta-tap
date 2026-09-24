@@ -247,26 +247,23 @@ top, then the tables an assessor asks about first. Reached by direct URL or the 
 
 #### Implementation
 
-`grift/okta-page.grift.json` (manifest `[grift] okta_page`), one batch `okta: org page v0.2.0`: the page
+`grift/okta-page.grift.json` (manifest `[grift] okta_page`), one batch `okta: org page v0.3.0`: the page
 node, sixteen `USES_PANEL` edges, a graph panel and fifteen standard table panels, each table over one
 search. Every id is defined in the bundle; nothing names an org or an entity id outside it.
 
-- **Parameter.** Every search declares one input, `org` (string), and filters each org it reaches
-  through `BELONGS_TO_ORG__okta` with `(o.data.name = $org OR o.entity_type = $org)`: the org's name,
-  matched exactly. The default is the sentinel `okta__okta_org`, the org type's own slug, which every
-  org's `entity_type` equals, so `?org` absent shows every org (the one org on a single-org grid). The
-  parameter is the name, not the entity id: an entity id is a UUID foreign key, so a blank default fails
-  UUID validation and Gryphon cannot test a parameter for absence (tap#360); the sentinel is the
-  workaround. `okta__okta_org.name` refuses the sentinel, so it is never a real org's name.
-- **Both ends in the org.** A search that joins two Okta objects scopes each to the org
-  (`(o)<-[:BELONGS_TO_ORG__okta]-(a)-[:EDGE]->(b)-[:BELONGS_TO_ORG__okta]->(o2)`, both filtered), so a
-  cross-org edge never pulls a foreign group, role or rule onto this org's page. A pattern that reuses
-  one variable to close the loop does not work in Gryphon (it does not unify the second binding), which
-  is why the path runs org to org. A node in the middle of a longer path (the role assignment between
-  holder and role, the rule between policy and authenticator) cannot be routed through the org by a
-  linear pattern, so it is filtered on its own `org_name` column:
-  `(<v>.data.org_name = $org OR o.entity_type = $org)`, whose second disjunct is true exactly for the
-  sentinel.
+- **Parameter.** Every search declares one input, `org` (`["string", "null"]`, default `null`), and
+  filters each org it reaches through `BELONGS_TO_ORG__okta` with `($org IS NULL OR o.data.name = $org)`:
+  the org's name, matched exactly, or every org when `?org` is absent (the one org on a single-org grid).
+  The parameter is the name, not the entity id: an entity id is a UUID foreign key. (Before tap v0.2.2
+  Gryphon could not test a parameter for absence, tap#360, and the page defaulted to the org type's slug
+  as an every-org sentinel; that workaround is gone.)
+- **Both ends in the org.** A search that joins two Okta objects scopes each to the SAME org by binding
+  one org variable at both ends: `(o)<-[:BELONGS_TO_ORG__okta]-(a)-[:EDGE]->(b)-[:BELONGS_TO_ORG__okta]->(o)`.
+  A repeated variable binds one node (tap#780, fixed in tap v0.2.2), so a cross-org edge never pulls a
+  foreign group, role or rule onto the page, including when `?org` is absent and every org is shown. A
+  node in the middle of a longer path (the role assignment between holder and role, the rule between
+  policy and authenticator) cannot be routed through the org by a linear pattern, so it is filtered on
+  its own `org_name` column: `($org IS NULL OR <v>.data.org_name = $org)`.
 - **Graph** (`org-graph`, row height `66vh`). `tap_viz/panels/graph_panel.html` over the `okta org`
   projection (`node_style: icon-badge`, `lock_nodes`, `min_zoom: fit`), one elevation, one layout,
   `static/okta/js/projections/okta-org.js`. Sixteen scene searches: the org; what it holds (applications,
@@ -325,9 +322,9 @@ search. Every id is defined in the bundle; nothing names an org or an entity id 
 | --- | --- | :---: | --- | --- |
 | req-okta-page-org-1 | Bundle Registered, Layout Shipped | Implemented | The manifest declares the bundle and the layout module the projection names ships in the package. | `tests/test_okta_page.py` |
 | req-okta-page-org-2 | Slots Match Panels | Implemented | One `USES_PANEL` per layout slot, graph first, slug `/okta`. | |
-| req-okta-page-org-3 | Icon-Badge, Named Edges | Implemented | The projection's `node_style` is `icon-badge`; no scene search matches an untyped edge; every search's `org` input defaults to the every-org sentinel. | |
+| req-okta-page-org-3 | Icon-Badge, Named Edges | Implemented | The projection's `node_style` is `icon-badge`; no scene search matches an untyped edge; every search's `org` input is `[string, null]` with default `null`, tested by `$org IS NULL`. | |
 | req-okta-page-org-4 | Reusable | Implemented | Every id an edge names is defined in the bundle. | |
-| req-okta-page-org-5 | One Org At A Time | Implemented | Imported with a seeded org, a second org and cross-org edges between them (a foreign node at either end of a join, and in the middle of a longer path), every search returns the seeded org's rows and none of the other's; `?org=a` does not match an org named `aba`; `?org` absent returns every org; an org cannot be named the sentinel. | Real search path (`execute_search`), both databases. |
+| req-okta-page-org-5 | One Org At A Time | Implemented | Imported with a seeded org, a second org and cross-org edges between them (a foreign node at either end of a join, and in the middle of a longer path), every search returns the seeded org's rows and none of the other's; `?org=a` does not match an org named `aba`; `?org` absent returns every org, and an edge search still keeps both ends in one org. | Real search path (`execute_search`), both databases. |
 | req-okta-page-org-6 | Layout Places Without Overlap | Implemented | The org container holds every family box, rules nest in their policies, an unmapped type is reported, no family boxes overlap, the Duo account sits outside the org, and every drawn edge carries its humanized type as a label. | v0.1.0 layout exercised under JavaScriptCore with the vendored Cytoscape (2026-09-22); v0.2.0 observed in a browser on the highbar stack (2026-09-24). Not a shipped test (no JS runner in CI). |
 | req-okta-page-org-7 | Renders In A Browser | Implemented | `/okta` renders on a booted stack with every slot filled and no console error from the graph's layout. | Observed 2026-09-24 on the highbar stack with `drive-browser`: the graph and all fifteen tables rendered, console clean. |
 | req-okta-page-org-8 | The Duo Link, Both Ways | Implemented | The cross-vendor search names duo's edge types and no duo node type, and okta declares no dependency on duo; with duo installed it returns the org's Duo application and account and none of another org's; without duo it runs and matches nothing. The graph panel's `nav_rules` route the Duo account to `/duo?account=<its name>` and the Duo application to `/duo`; the org itself does not navigate. | `test_duo_link_is_open_ended_and_navigable`, `test_every_search_answers_for_one_org`. Clicked through in a browser on the highbar stack (2026-09-24). |
