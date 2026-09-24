@@ -58,4 +58,3 @@ Documented path: `GET /api/v1/policies/{id}/rules` (okta.policies.read).
 - `access` — The rule's access decision.
 - `factor_mode` — How many factor types the rule demands: ACCESS_POLICY verificationMethod.factorMode; for a global session rule, 2FA when requireFactor is true. Blank means not observed, never 'no MFA'.
 - `reauthenticate_in` — ISO-8601 duration before the user must re-verify (PT12H); blank when not observed.
-- `tags` — TAP's tag map.

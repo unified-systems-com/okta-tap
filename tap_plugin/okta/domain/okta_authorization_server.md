@@ -58,4 +58,3 @@ Documented path: `GET /api/v1/authorizationServers` (okta.authorizationServers.r
 - `audiences` — The audiences the server mints tokens for.
 - `scopes` — Custom scope names. A field in v1: nothing yet needs to point at a scope (Backlog: req-okta-backlog-oauth-grants).
 - `claims` — Custom claim names. A field in v1 for the same reason as scopes.
-- `tags` — TAP's tag map.

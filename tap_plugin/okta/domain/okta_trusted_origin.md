@@ -54,4 +54,3 @@ Documented path: `GET /api/v1/trustedOrigins` (okta.trustedOrigins.read).
 - `origin` — The origin URL (scheme, host, port).
 - `scopes` — What the origin is trusted for: CORS, REDIRECT, IFRAME_EMBED.
 - `status` — Okta's status.
-- `tags` — TAP's tag map.

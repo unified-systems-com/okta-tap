@@ -55,4 +55,3 @@ Documented path: Custom roles by `GET /api/v1/iam/roles` (okta.roles.read); stan
 - `role_type` — Okta's standard role type, or CUSTOM.
 - `permissions` — A custom role's permissions (okta.users.manage, ...). Blank for standard roles: Okta defines those.
 - `description` — The role's description.
-- `tags` — TAP's tag map.

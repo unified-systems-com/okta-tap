@@ -58,4 +58,3 @@ Documented path: `GET /api/v1/policies?type=<TYPE>` (okta.policies.read), one ca
 - `priority` — Evaluation order among policies of the same type (1 first). Null for types Okta does not order (ACCESS_POLICY).
 - `system` — True for the policy Okta ships and will not let you delete (the Default Policy). Null means not observed.
 - `description` — The policy's description.
-- `tags` — TAP's tag map.

@@ -45,7 +45,6 @@ class OktaAuthorizationServer(BaseModel):
         "audiences": {"type": "array", "items": {"type": "string"}},
         "scopes": {"type": "array", "items": {"type": "string"}},
         "claims": {"type": "array", "items": {"type": "string"}},
-        "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
         "org_name": {"validation": "jsonschema", "schema": {"type": "string", "minLength": 1}},
@@ -57,7 +56,6 @@ class OktaAuthorizationServer(BaseModel):
         "audiences": {"validation": "jsonschema", "schema": {"type": "array", "items": {"type": "string"}}},
         "scopes": {"validation": "jsonschema", "schema": {"type": "array", "items": {"type": "string"}}},
         "claims": {"validation": "jsonschema", "schema": {"type": "array", "items": {"type": "string"}}},
-        "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "name"]
 
@@ -85,8 +83,6 @@ class OktaAuthorizationServer(BaseModel):
     scopes = models.JSONField(default=list, blank=True)
     #: Custom claim names. A field in v1 for the same reason as scopes.
     claims = models.JSONField(default=list, blank=True)
-    #: TAP's tag map.
-    tags = models.JSONField(default=dict, blank=True)
 
     class Meta(BaseModel.Meta):
         db_table = "okta__okta_authorization_server"

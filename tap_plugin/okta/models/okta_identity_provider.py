@@ -44,7 +44,6 @@ class OktaIdentityProvider(BaseModel):
         "provisioning_action": {"type": "string", "enum": ["", "AUTO", "DISABLED"]},
         "account_link_action": {"type": "string", "enum": ["", "AUTO", "DISABLED"]},
         "subject_match_type": {"type": "string"},
-        "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
         "org_name": {"validation": "jsonschema", "schema": {"type": "string", "minLength": 1}},
@@ -56,7 +55,6 @@ class OktaIdentityProvider(BaseModel):
         "provisioning_action": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "AUTO", "DISABLED"]}},
         "account_link_action": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "AUTO", "DISABLED"]}},
         "subject_match_type": {"validation": "jsonschema", "schema": {"type": "string"}},
-        "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "name"]
 
@@ -86,8 +84,6 @@ class OktaIdentityProvider(BaseModel):
     #: policy.subject.matchType: how the assertion's subject is matched to a user (USERNAME, EMAIL,
     #: USERNAME_OR_EMAIL, CUSTOM_ATTRIBUTE).
     subject_match_type = models.CharField(max_length=255, blank=True, default="")
-    #: TAP's tag map.
-    tags = models.JSONField(default=dict, blank=True)
 
     class Meta(BaseModel.Meta):
         db_table = "okta__okta_identity_provider"

@@ -41,7 +41,6 @@ class OktaApiToken(BaseModel):
         "created_at": {"type": ["string", "null"]},
         "expires_at": {"type": ["string", "null"]},
         "network_connection": {"type": "string", "enum": ["", "ANYWHERE", "ZONE"]},
-        "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
         "org_name": {"validation": "jsonschema", "schema": {"type": "string", "minLength": 1}},
@@ -51,7 +50,6 @@ class OktaApiToken(BaseModel):
         "created_at": {"validation": "jsonschema", "schema": {"type": ["string", "null"]}},
         "expires_at": {"validation": "jsonschema", "schema": {"type": ["string", "null"]}},
         "network_connection": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "ANYWHERE", "ZONE"]}},
-        "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "name"]
 
@@ -74,8 +72,6 @@ class OktaApiToken(BaseModel):
     expires_at = models.DateTimeField(null=True, blank=True)
     #: network.connection: whether the token is usable from anywhere or only from listed zones.
     network_connection = models.CharField(max_length=255, blank=True, default="")
-    #: TAP's tag map.
-    tags = models.JSONField(default=dict, blank=True)
 
     class Meta(BaseModel.Meta):
         db_table = "okta__okta_api_token"

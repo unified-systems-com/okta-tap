@@ -53,4 +53,3 @@ Documented path: `GET /api/v1/users/{id}/roles` and `/api/v1/groups/{id}/roles` 
 - `okta_id` — Okta's own object id (for example 00u1a2b3c4). Blank until observed: a design node has none.
 - `assignment_type` — Okta's assignmentType: to a user directly, to a group, or to a service app (CLIENT).
 - `status` — Okta's assignment status.
-- `tags` — TAP's tag map.

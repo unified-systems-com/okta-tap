@@ -56,4 +56,3 @@ Documented path: `GET /api/v1/authenticators` (okta.authenticators.read); a user
 - `authenticator_type` — Okta's type: app, password, email, phone, security_key, security_question, federated, tac.
 - `status` — Okta's authenticator status.
 - `phishing_resistant` — Whether the authenticator can satisfy a phishing-resistant constraint (FastPass, WebAuthn, smart card). Null means not observed.
-- `tags` — TAP's tag map.

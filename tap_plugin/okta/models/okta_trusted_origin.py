@@ -39,7 +39,6 @@ class OktaTrustedOrigin(BaseModel):
         "origin": {"type": "string"},
         "scopes": {"type": "array", "items": {"type": "string"}},
         "status": {"type": "string", "enum": ["", "ACTIVE", "INACTIVE"]},
-        "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
         "org_name": {"validation": "jsonschema", "schema": {"type": "string", "minLength": 1}},
@@ -48,7 +47,6 @@ class OktaTrustedOrigin(BaseModel):
         "origin": {"validation": "jsonschema", "schema": {"type": "string"}},
         "scopes": {"validation": "jsonschema", "schema": {"type": "array", "items": {"type": "string"}}},
         "status": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "ACTIVE", "INACTIVE"]}},
-        "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "name"]
 
@@ -68,8 +66,6 @@ class OktaTrustedOrigin(BaseModel):
     scopes = models.JSONField(default=list, blank=True)
     #: Okta's status.
     status = models.CharField(max_length=255, blank=True, default="")
-    #: TAP's tag map.
-    tags = models.JSONField(default=dict, blank=True)
 
     class Meta(BaseModel.Meta):
         db_table = "okta__okta_trusted_origin"

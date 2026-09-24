@@ -52,4 +52,3 @@ Documented path: `GET /api/v1/iam/resource-sets` (okta.roles.read).
 - `name` — The resource set's label.
 - `okta_id` — Okta's own object id (for example 00u1a2b3c4). Blank until observed: a design node has none.
 - `description` — The resource set's description.
-- `tags` — TAP's tag map.

@@ -55,4 +55,3 @@ Documented path: `GET /api/v1/api-tokens` (okta.apiTokens.read). The API reports
 - `created_at` — When the token was created.
 - `expires_at` — expiresAt: Okta moves it forward on every use (a token expires after 30 days unused), so it is also the API's only read on recent use. The API reports no last-used time.
 - `network_connection` — network.connection: whether the token is usable from anywhere or only from listed zones.
-- `tags` — TAP's tag map.

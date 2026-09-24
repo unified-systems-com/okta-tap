@@ -57,4 +57,3 @@ Documented path: `GET /api/v1/zones` (okta.networkZones.read).
 - `system` — True for the zones Okta ships. Null means not observed.
 - `gateways` — IP zone gateway ranges (CIDR or range strings).
 - `proxies` — IP zone trusted proxy ranges.
-- `tags` — TAP's tag map.
