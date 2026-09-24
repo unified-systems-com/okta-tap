@@ -27,9 +27,11 @@ domain article under `tap_plugin/okta/domain/`.
   deliberately open.
 - `identity_core__organization` is a customer or company, not a tenant; not used.
 - `computing_core__user` ("a human who interacts with computing systems") is the only person-like type on
-  the grid. It is keyed on a display name alone, which is too weak to converge accounts on; the Okta user
-  therefore points at a person through the open-ended `IDENTIFIES_PERSON__okta` and the neutral
-  person/principal type is reported as a substrate gap.
+  the grid. It is keyed on a display name alone, which is too weak to converge accounts on. At first the
+  Okta user pointed at a person through an open-ended `IDENTIFIES_PERSON__okta`, and the missing neutral
+  person type was reported as a substrate gap. identity_core now owns `identity_core__human` and its
+  wildcard-source `HELD_BY_HUMAN__identity_core` (2026-09-23), so the Okta edge was retired and the user
+  declares identity_core's edge instead (2026-09-24).
 - `duo__duo_account`, `teleport__teleport_cluster`, `gitlab__gitlab_instance` exist. Named nowhere in
   this plugin: the edges that reach them (`DELEGATES_VERIFICATION__okta`, `SENDS_ASSERTION__okta`) leave
   their target open.
@@ -105,7 +107,7 @@ question named in its schema description.
 | `ACTS_AS_USER` | API token → user | none | BloodHound `Okta_ApiTokenFor`, reversed to the direction of action. |
 | `REGISTERED_DEVICE` | user → device | none | BloodHound `Okta_DeviceOf`, reversed. |
 | `WRITES_LOGS` | log stream → open | none | aws_core's `WRITES_LOGS` mechanism; destination is another plugin's node. |
-| `IDENTIFIES_PERSON` | user → open | none | Account/person split (Cartography's `USER_ACCOUNT` ontology label). |
+| `HELD_BY_HUMAN__identity_core` (identity_core's, declared on the user) | user → `identity_core__human` | `matched_on` | Account/person split (Cartography's `USER_ACCOUNT` ontology label). Replaced this corpus's own `IDENTIFIES_PERSON`, whose target was open only until a substrate owned a person type. |
 
 ## Rejected candidates
 
@@ -136,8 +138,8 @@ question named in its schema description.
 
 ## Gaps reported to the substrate owners (not edited here)
 
-- **A neutral person / principal type.** identity_core has none; `computing_core__user` is keyed on a
-  display name. `IDENTIFIES_PERSON__okta` waits for it.
+- **A neutral person / principal type.** Closed 2026-09-23: identity_core owns `identity_core__human`;
+  the Okta user declares `HELD_BY_HUMAN__identity_core` to it and `IDENTIFIES_PERSON__okta` is retired.
 - **Core permission union.** An edge type's `sources` / `targets` are not enforced for a node type that
   declares no `OUTBOUND_EDGES` / `INBOUND_EDGES` (`tap_grid/constraints.py`, `validate_edge`); the okta
   tests assert the declaration rather than a refusal.

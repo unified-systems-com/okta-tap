@@ -6,7 +6,7 @@ A user account in an Okta org: one login, its lifecycle status and when it last 
 
 ## Purpose
 
-A person's (or a service identity's) account in one Okta org. The account, not the person: the same human holds one account per org, and the link to a neutral person node is the open-ended IDENTIFIES_PERSON__okta edge.
+A person's (or a service identity's) account in one Okta org. The account, not the person: the same human holds one account per org, and each account points at the one `identity_core__human` with `HELD_BY_HUMAN__identity_core` (declared in `OUTBOUND_EDGES`).
 
 It exists so the /okta page and any query over an Okta org can reach it by type, scoped to one org by `BELONGS_TO_ORG`.
 
@@ -24,13 +24,13 @@ Natural key: `org_name`, `login`. login is unique within an org and is what a de
 ## Boundaries
 
 - No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
-- The person behind the account is not modelled here: IDENTIFIES_PERSON points at a neutral person node when one exists.
+- The person behind the account is not modelled here: it is `identity_core__human`, reached by `HELD_BY_HUMAN__identity_core`. The edge is drawn by whoever knows the match (an operator's seed, an HR feed, a collector matching an immutable id) and records how in `matched_on`; it is never inferred from `email` or `display_name`. An account with no such edge is unmatched, and one with two is shared; both are access-review findings.
 - Profile attributes beyond login, email and display name are not stored.
 - The user type is a field (`user_type`); Cartography models it as a node, but nothing but the user points at it.
 
 ## Neutrality
 
-Vendor-specific: an Okta user account. The neutral person or principal it identifies belongs in a substrate (identity_core has no person type yet; computing_core__user exists but is keyed on a display name alone).
+Vendor-specific: an Okta user account. The neutral person it belongs to is identity_core's `human`, keyed on an operator-assigned handle.
 
 ## Observability
 

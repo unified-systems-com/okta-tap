@@ -49,8 +49,8 @@ of one org.
 
 **Deliberately not done.** No collector (Backlog). No derived capability edges. No sessions or System Log
 events as nodes: they are an event stream a collector reads, and grid history keeps what it lands. No
-person type: the account/person split is a substrate question, so `IDENTIFIES_PERSON__okta` leaves its
-target open. No dependency on the plugins of the services Okta signs in to (Teleport, GitLab) or on Duo:
+person type of its own: the person is identity_core's `human`, and an Okta user points at it with
+identity_core's `HELD_BY_HUMAN__identity_core` (`req-okta-person`). No dependency on the plugins of the services Okta signs in to (Teleport, GitLab) or on Duo:
 the edges that reach them leave their target open.
 
 **Three states.** Every observed field is blank (or null) when not observed, never a default that reads
@@ -83,7 +83,8 @@ edge seeded by an instance's design is *designed* (`dcom: design`).
 | --- | --- | --- | --- |
 | req-okta-model | [Okta Org Model](#okta-org-model) | Implemented | The tenant: its fields, natural key, icon and display |
 | req-okta-corpus | [Corpus Node Types](#corpus-node-types) | Implemented | The seventeen types inside an org, their keys, icons and domain articles |
-| req-okta-edges | [Corpus Edge Types](#corpus-edge-types) | Implemented | Twenty-four edges; open ends and the one substrate target |
+| req-okta-edges | [Corpus Edge Types](#corpus-edge-types) | Implemented | Twenty-three edges; open ends and the one substrate target |
+| req-okta-person | [Person Link](#person-link) | Implemented | An Okta user is held by `identity_core__human` (`HELD_BY_HUMAN__identity_core`) |
 | req-okta-page-org | [Page: Org](#page-org) | In Development | `/okta?org=<org name>`: the graph, then fifteen tables; bundle and searches verified in tests, browser rendering not yet observed |
 | req-okta-record | [CI Record and Tests](#ci-record-and-tests) | Implemented | The in-package `ci` boot record and the suite |
 | req-okta-collector | [Collector](#collector) | Backlog | Observe a real Okta org onto the grid |
@@ -172,7 +173,7 @@ RID: `req-okta-edges`
 
 Status: `Implemented`
 
-Twenty-four edges, one relationship each, registered in `tap-plugin.toml` `[edges]` from
+Twenty-three edges, one relationship each, registered in `tap-plugin.toml` `[edges]` from
 `tap_plugin/okta/edges/<SLUG>.edge.json`. The table in [Edge types](#edge-types) records why each points
 the way it does.
 
@@ -182,10 +183,11 @@ Every slug is `<ACTION>_<OBJECT>__okta`. Every property schema is closed (`addit
 and the properties that decide severity are required where the edge is meaningless without them
 (`APPLIES_TO_GROUP.mode`, `MATCHES_NETWORK_ZONE.mode`, `ENROLLS_AUTHENTICATOR.enroll`). No edge declares
 default dimensions. The one foreign type named is `identity_core__oidc_issuer` (`SERVES_ISSUER__okta`),
-declared in `depends_on` as a vocabulary dependency. Four edges leave their target open and say in their
+declared in `depends_on` as a vocabulary dependency. Three edges leave their target open and say in their
 description what appears there: `SENDS_ASSERTION` (the relying service: a Teleport cluster, a GitLab
-instance), `DELEGATES_VERIFICATION` (the external verifier: a Duo account), `WRITES_LOGS` (the log
-destination) and `IDENTIFIES_PERSON` (a neutral person). An OIDC identity provider reaches its issuer by
+instance), `DELEGATES_VERIFICATION` (the external verifier: a Duo account) and `WRITES_LOGS` (the log
+destination). `IDENTIFIES_PERSON` (user → open person) was retired on 2026-09-24: identity_core's
+`HELD_BY_HUMAN__identity_core` is the same relationship with a real target (`req-okta-person`). An OIDC identity provider reaches its issuer by
 identity_core's own `TRUSTS_ISSUER__identity_core`, whose source side is open for exactly this.
 
 #### Acceptance Criteria
@@ -196,6 +198,40 @@ identity_core's own `TRUSTS_ISSUER__identity_core`, whose source side is open fo
 | req-okta-edges-2 | Open Ends Explained, Substrate Only | Implemented | An omitted target is explained in the description; the only foreign type named is identity_core's, and identity_core is the only `depends_on`. | |
 | req-okta-edges-3 | Rules Retire With Their Policy | Implemented | `delete_node(policy, cascade="contained")` retires its rules and ends, never follows, their references. | |
 | req-okta-edges-4 | Property Vocabularies Enforced | Implemented | An edge write with an unknown property, or a value outside a property's enum, is refused; a required property is required. | |
+
+---
+
+### Person Link
+----
+RID: `req-okta-person`
+
+Status: `Implemented`
+
+An Okta user is one person's account in one org; the person is `identity_core__human`, a neutral substrate
+node keyed on an operator-assigned handle, so the same human's Okta, Duo, Teleport and GitLab accounts
+converge on one node. The link is identity_core's `HELD_BY_HUMAN__identity_core`, whose source is
+wildcard so the substrate never depends on this plugin.
+
+#### Implementation
+
+`OktaUser.OUTBOUND_EDGES` declares `{"nodes": [{"type": "identity_core__human"}], "edges": [{"type":
+"HELD_BY_HUMAN__identity_core"}]}`. Under the permission union (`req-grid-edge-constraints-3`) this adds a
+permission and constrains nothing else: the okta edge files still permit the user's own edges.
+`identity_core` is already the plugin's one `depends_on` (a vocabulary dependency); the `ci` record pins
+it at `53da388b6f47590090ef3bdc8d98731acff4c8e2`, the first main commit carrying the human (no tagged
+release does yet, so no `min_version` floor is declared). This retired the corpus's own
+`IDENTIFIES_PERSON__okta` (user → open target), which recorded the same relationship while no substrate
+owned a person type: two edges for one relationship is the one-edge-one-relationship defect. Email is not
+identity: the edge is drawn by whoever knows the match and records how in `matched_on`; nothing joins on
+`email`.
+
+#### Acceptance Criteria
+
+| ACID | Title | Status | Description | Notes |
+| --- | --- | :---: | --- | --- |
+| req-okta-person-1 | Declared On The User | Implemented | `OktaUser` declares `HELD_BY_HUMAN__identity_core` to `identity_core__human`; `identity_core` is in `depends_on`; `IDENTIFIES_PERSON__okta` is no longer shipped. | `test_person_link_is_declared` |
+| req-okta-person-2 | Written Through The Service Layer | Implemented | An Okta user writes the edge to a human with `matched_on`; an unknown property is refused (on a fresh pair). | `test_user_is_held_by_a_human`, `test_unknown_property_is_refused` |
+| req-okta-person-3 | Shared Account Recorded | Implemented | One Okta user may be held by two humans; both edges stand. | `test_shared_account_is_recorded` |
 
 ---
 
@@ -283,10 +319,10 @@ The in-package `ci` boot record (`req-boot-bootstrap-ci-record`) and the tests t
 
 #### Implementation
 
-`tap_plugin/okta/boot/ci.boot.json` installs identity_core (pinned at v0.1.2,
-`63da037c77355369f91748127a74c7a17e00a7f9`) and self, offline and credential-free, and seeds the plugin's
+`tap_plugin/okta/boot/ci.boot.json` installs identity_core (pinned at
+`53da388b6f47590090ef3bdc8d98731acff4c8e2`, the main commit carrying `identity_core__human`) and self, offline and credential-free, and seeds the plugin's
 own GRIFT; the consumer flips self to editable. Tests: `test_okta_manifest.py` (`validate_plugin` at
-structure and strict), `test_okta_org.py`, `test_okta_corpus.py`, `test_okta_page.py`.
+structure and strict), `test_okta_org.py`, `test_okta_corpus.py`, `test_okta_page.py`, `test_okta_person.py`.
 
 #### Acceptance Criteria
 

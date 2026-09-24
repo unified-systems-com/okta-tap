@@ -4,7 +4,7 @@ Okta workforce identity as grid vocabulary: the org and the objects a FedRAMP op
 
 ## What this plugin owns
 
-- Eighteen node types (`okta__okta_org` and the seventeen things inside an org) and twenty-four edges. Each has a domain article under `tap_plugin/okta/domain/`.
+- Eighteen node types (`okta__okta_org` and the seventeen things inside an org) and twenty-three edges, plus identity_core's `HELD_BY_HUMAN__identity_core` from a user to the person who holds it. Each has a domain article under `tap_plugin/okta/domain/`.
 - The `/okta` page: the org as a picture (applications, groups, policies with their rules, authenticators, federation, administration), then fifteen tables. `?org=<org name>` picks the org (exact match); absent, every org on the grid is shown.
 - The reusable layout module `static/okta/js/projections/okta-org.js`.
 
