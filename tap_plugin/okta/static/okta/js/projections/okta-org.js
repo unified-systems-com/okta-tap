@@ -106,7 +106,9 @@ const _orgPadding = (inset) => ({top: 22 + inset, right: 36, bottom: 32, left: 3
 //: "EVALUATES_RULE__okta" → "evaluates rule": drop the owning plugin's suffix, lower-case, spaces.
 export function humanizeEdgeType(edgeType) {
     if (!edgeType) return "";
-    return String(edgeType).replace(/__[a-z0-9_]+$/, "").replace(/_+/g, " ").trim().toLowerCase();
+    const text = String(edgeType);
+    const cut = text.indexOf("__", 1);
+    return (cut > 0 ? text.slice(0, cut) : text).split("_").filter(Boolean).join(" ").toLowerCase();
 }
 
 const _isOkta = (type) => typeof type === "string" && type.startsWith("okta__");
@@ -164,22 +166,30 @@ export async function execute(context) {
     warnings.push(...(result.warnings || []));
 
     // One picture per org, side by side (normally there is one), each followed by the foreign
-    // nodes it connects to.
+    // nodes it connects to. A foreign node is placed beside an org only when an edge joins them:
+    // proximity would otherwise claim an association the grid does not record.
     const foreignRoots = _foreignRoots(cy);
     const placedForeign = new Set();
     let x = 0;
-    orgs.forEach((org, i) => {
+    let lastBox = null;
+    orgs.forEach((org) => {
         const families = familiesByOrg.get(org.id()) || new Map();
         const box = families.size > 0 ? _placeInside(cy, org, families, x, labelInset) : _placeLeaf(org, x);
         let right = box.x2;
-        const isLast = i === orgs.length - 1;
-        const mine = foreignRoots.filter((r) => !placedForeign.has(r.id()) && (isLast || _connects(cy, org, r)));
+        const mine = foreignRoots.filter((r) => !placedForeign.has(r.id()) && _connects(cy, org, r));
         if (mine.length > 0) {
             right = _placeForeign(cy, mine, box);
             mine.forEach((r) => placedForeign.add(r.id()));
         }
+        lastBox = {...box, x2: right};
         x = right + GEOM.orgGap;
     });
+    // Foreign nodes no org connects to: still drawn, in their own column past every org, and reported.
+    const unattached = foreignRoots.filter((r) => !placedForeign.has(r.id()));
+    if (unattached.length > 0) {
+        unattached.forEach((r) => warn("okta_foreign_unattached", `${r.data("label")} (${r.data("entity_type")}) connects to no org in the scene; drawn apart`));
+        _placeForeign(cy, unattached, {...lastBox, x2: x - GEOM.orgGap});
+    }
 
     placeParentLabels(cy, {
         anchor: "upper-left", inset: GEOM.labelInset,

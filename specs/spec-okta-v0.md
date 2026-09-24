@@ -300,8 +300,9 @@ search. Every id is defined in the bundle; nothing names an org or an entity id 
   pass (spec-viz-nested-projection.md) sizes every box, then the module places the families on the grid
   and re-fits the org around them. `BELONGS_TO_ORG__okta` edges are hidden because the containers say it.
   A node of another system's type (not `okta__`) joins no family: it is drawn in a column right of the org
-  it connects to, the Duo application inside its Duo account (a dashed box, nested by
-  `HOLDS_ACCOUNT_OBJECT__duo`). Every drawn edge is labelled with its type, humanized
+  it connects to by an edge, the Duo application inside its Duo account (a dashed box, nested by
+  `HOLDS_ACCOUNT_OBJECT__duo`); a foreign node no org connects to is drawn apart, past every org, and
+  reported, never placed beside an org it has no edge to. Every drawn edge is labelled with its type, humanized
   (`EVALUATES_RULE__okta` → "evaluates rule"): `applyStandardChrome(cy, {edgeLabels: true})` keeps the
   label and the module sets its text, since tap_viz has no humanized edge-label option. An okta type no
   family names is drawn in an Other box and reported as a warning, never dropped; each org in the scene
