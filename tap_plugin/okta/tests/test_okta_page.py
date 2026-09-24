@@ -220,12 +220,17 @@ def test_duo_link_is_open_ended_and_navigable() -> None:
     query = " ".join(spec["node"]["definition"]["query"])
     assert "REQUESTS_SECOND_FACTOR__duo" in query
     assert ":duo__" not in query, "naming a duo node type would fail the search on a grid without duo"
-    uses = {e["edge"]["to_entity_id"] for b in _bundle()["batches"] for e in b["edges"] if e["edge"]["edge_type"] == "USES_SEARCH"}
-    assert spec["entity"]["entity_id"] in uses
     manifest = tomllib.loads((PKG / "tap-plugin.toml").read_text())
     assert "duo" not in {d["slug"] for d in manifest.get("depends_on", [])}
 
     (panel,) = [n for n in _nodes("panel") if n["node"].get("view") == "tap_viz/panels/graph_panel.html"]
+    mounted = {
+        (e["edge"]["from_entity_id"], e["edge"]["to_entity_id"])
+        for b in _bundle()["batches"]
+        for e in b["edges"]
+        if e["edge"]["edge_type"] == "USES_SEARCH"
+    }
+    assert (panel["entity"]["entity_id"], spec["entity"]["entity_id"]) in mounted, "the graph panel mounts the search"
     account = {"entity_type": "duo__duo_account", "data": {"name": "Acme Duo"}}
     app = {"entity_type": "duo__duo_application", "data": {"name": "Okta"}}
     org = {"entity_type": "okta__okta_org", "data": {"name": "acme"}}
