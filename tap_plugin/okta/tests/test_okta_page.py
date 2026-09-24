@@ -165,7 +165,9 @@ def test_graph_is_icon_badge_and_names_every_edge_type() -> None:
     for s in _nodes("search"):
         q = " ".join(s["node"]["definition"]["query"])
         assert "-[]" not in q and "-[e]" not in q, s["entity"]["name"]
-        assert s["node"]["input_schema"]["properties"]["org"]["default"] == "okta__okta_org"
+        org = s["node"]["input_schema"]["properties"]["org"]
+        assert org["type"] == ["string", "null"] and org["default"] is None, s["entity"]["name"]
+        assert "$org IS NULL OR" in q and "entity_type = $org" not in q, s["entity"]["name"]
 
 
 def test_no_entity_id_outside_the_bundle() -> None:
@@ -252,12 +254,32 @@ def test_absent_org_means_every_org() -> None:
     _seed_org(s)
     (apps,) = [n for n in _nodes("search") if n["entity"]["name"] == "okta — applications in the org"]
     search = Search.objects.get(entity_id=apps["entity"]["entity_id"])
-    every = execute_search(search, inputs={})  # schema default: the every-org sentinel
+    every = execute_search(search, inputs={})  # schema default null: $org IS NULL, every org
     every = every.get("results", every)
     assert {n["name"] for n in every["nodes"]} == {"Teleport", "Active Directory", "Other app"}
     one = execute_search(search, inputs={"org": "other"})
     one = one.get("results", one)
     assert {n["name"] for n in one["nodes"]} == {"Other app"}
+
+
+@READS_THROUGH_GRYPHON
+def test_absent_org_still_keeps_both_ends_in_one_org() -> None:
+    """req-okta-page-org-5: with ?org absent every org shows, but an edge search binds ONE org variable at
+    both ends, so a cross-org edge (a foreign group assigned acme's app) is still never drawn."""
+    from tap_grid.grift import grift_import
+    from tap_grid.models import Search
+    from tap_grid.search import execute_search
+
+    assert grift_import(_bundle()).success
+    s = _Seed()
+    _seed_org(s)
+    (spec,) = [n for n in _nodes("search") if n["entity"]["name"] == "okta — scene edges: group → application assignments"]
+    search = Search.objects.get(entity_id=spec["entity"]["entity_id"])
+    env = execute_search(search, inputs={})
+    env = env.get("results", env)
+    names = {n["name"] for n in env["nodes"]}
+    assert "Engineers" in names and "Teleport" in names
+    assert "Other group" not in names, "a cross-org edge was drawn with ?org absent"
 
 
 @READS_THROUGH_GRYPHON

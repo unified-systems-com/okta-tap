@@ -8,12 +8,12 @@
       "batch_entity": {
         "entity_id": "01a0d48c-19ba-7158-91e7-c44259377c18",
         "entity_type": "batch",
-        "name": "okta: org page v0.2.0",
+        "name": "okta: org page v0.3.0",
         "dimensions": {}
       },
       "batch_node": {
         "source": "tap_plugin.okta.grift.okta_page",
-        "name": "okta: org page v0.2.0",
+        "name": "okta: org page v0.3.0",
         "description": "The /okta page (req-okta-page-org): one page, a graph panel over a projection with the okta-org.js layout and its org-scoped scene searches (one of them cross-vendor: the Duo application the org sends users to for a second factor, and the Duo account holding it), and fifteen standard table panels, each over one org-scoped search. Every search takes ?org=<org name>; nothing here names an org or an entity id outside this bundle. v0.2.0: the org is the outer box of the picture, every drawn edge is labelled with its type, the Duo relationship /duo draws is drawn here too, and clicking the Duo account opens /duo for it."
       },
       "nodes": [
@@ -124,7 +124,7 @@
             "definition": {
               "query": [
                 "MATCH (o:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN o"
               ]
             },
@@ -132,9 +132,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -159,7 +162,7 @@
             "definition": {
               "query": [
                 "MATCH (n)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "AND n.entity_type IN [\"okta__okta_application\", \"okta__okta_group\", \"okta__okta_policy\", \"okta__okta_policy_rule\", \"okta__okta_authenticator\", \"okta__okta_identity_provider\", \"okta__okta_authorization_server\", \"okta__okta_admin_role\", \"okta__okta_role_assignment\", \"okta__okta_resource_set\", \"okta__okta_network_zone\", \"okta__okta_trusted_origin\", \"okta__okta_log_stream\"]",
                 "RETURN n, o"
               ]
@@ -168,9 +171,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -189,13 +195,13 @@
           },
           "node": {
             "name": "okta — scene edges: group → application assignments",
-            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "description": "One drawn edge type of the /okta graph, scoped to one org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta reaches the same org variable), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
             "search_type": "gryphon",
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_group)-[:ASSIGNED_APPLICATION__okta]->(b:okta__okta_application)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_group)-[:ASSIGNED_APPLICATION__okta]->(b:okta__okta_application)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN a, b"
               ]
             },
@@ -203,9 +209,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -224,13 +233,13 @@
           },
           "node": {
             "name": "okta — scene edges: application → authentication policy",
-            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "description": "One drawn edge type of the /okta graph, scoped to one org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta reaches the same org variable), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
             "search_type": "gryphon",
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_application)-[:BOUND_TO_POLICY__okta]->(b:okta__okta_policy)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_application)-[:BOUND_TO_POLICY__okta]->(b:okta__okta_policy)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN a, b"
               ]
             },
@@ -238,9 +247,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -259,13 +271,13 @@
           },
           "node": {
             "name": "okta — scene edges: policy → its rules (the layout nests them)",
-            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "description": "One drawn edge type of the /okta graph, scoped to one org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta reaches the same org variable), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
             "search_type": "gryphon",
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy)-[:EVALUATES_RULE__okta]->(b:okta__okta_policy_rule)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy)-[:EVALUATES_RULE__okta]->(b:okta__okta_policy_rule)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN a, b"
               ]
             },
@@ -273,9 +285,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -294,13 +309,13 @@
           },
           "node": {
             "name": "okta — scene edges: rule → authenticator it requires",
-            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "description": "One drawn edge type of the /okta graph, scoped to one org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta reaches the same org variable), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
             "search_type": "gryphon",
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy_rule)-[:REQUIRES_AUTHENTICATOR__okta]->(b:okta__okta_authenticator)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy_rule)-[:REQUIRES_AUTHENTICATOR__okta]->(b:okta__okta_authenticator)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN a, b"
               ]
             },
@@ -308,9 +323,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -329,13 +347,13 @@
           },
           "node": {
             "name": "okta — scene edges: enrollment policy → authenticator",
-            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "description": "One drawn edge type of the /okta graph, scoped to one org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta reaches the same org variable), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
             "search_type": "gryphon",
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy)-[:ENROLLS_AUTHENTICATOR__okta]->(b:okta__okta_authenticator)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy)-[:ENROLLS_AUTHENTICATOR__okta]->(b:okta__okta_authenticator)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN a, b"
               ]
             },
@@ -343,9 +361,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -364,13 +385,13 @@
           },
           "node": {
             "name": "okta — scene edges: policy or rule → group it names",
-            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "description": "One drawn edge type of the /okta graph, scoped to one org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta reaches the same org variable), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
             "search_type": "gryphon",
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a)-[:APPLIES_TO_GROUP__okta]->(b:okta__okta_group)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a)-[:APPLIES_TO_GROUP__okta]->(b:okta__okta_group)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "AND a.entity_type IN [\"okta__okta_policy\", \"okta__okta_policy_rule\"]",
                 "RETURN a, b"
               ]
@@ -379,9 +400,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -400,13 +424,13 @@
           },
           "node": {
             "name": "okta — scene edges: routing rule → identity provider",
-            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "description": "One drawn edge type of the /okta graph, scoped to one org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta reaches the same org variable), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
             "search_type": "gryphon",
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy_rule)-[:ROUTES_AUTHENTICATION__okta]->(b:okta__okta_identity_provider)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy_rule)-[:ROUTES_AUTHENTICATION__okta]->(b:okta__okta_identity_provider)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN a, b"
               ]
             },
@@ -414,9 +438,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -435,13 +462,13 @@
           },
           "node": {
             "name": "okta — scene edges: identity provider → group it assigns",
-            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "description": "One drawn edge type of the /okta graph, scoped to one org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta reaches the same org variable), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
             "search_type": "gryphon",
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_identity_provider)-[:ASSIGNS_GROUP_MEMBERSHIP__okta]->(b:okta__okta_group)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_identity_provider)-[:ASSIGNS_GROUP_MEMBERSHIP__okta]->(b:okta__okta_group)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN a, b"
               ]
             },
@@ -449,9 +476,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -470,13 +500,13 @@
           },
           "node": {
             "name": "okta — scene edges: group or service app → admin role assignment",
-            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "description": "One drawn edge type of the /okta graph, scoped to one org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta reaches the same org variable), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
             "search_type": "gryphon",
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a)-[:HOLDS_ROLE_ASSIGNMENT__okta]->(b:okta__okta_role_assignment)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a)-[:HOLDS_ROLE_ASSIGNMENT__okta]->(b:okta__okta_role_assignment)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "AND a.entity_type IN [\"okta__okta_group\", \"okta__okta_application\"]",
                 "RETURN a, b"
               ]
@@ -485,9 +515,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -506,13 +539,13 @@
           },
           "node": {
             "name": "okta — scene edges: assignment → admin role",
-            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "description": "One drawn edge type of the /okta graph, scoped to one org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta reaches the same org variable), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
             "search_type": "gryphon",
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_role_assignment)-[:GRANTS_ADMIN_ROLE__okta]->(b:okta__okta_admin_role)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_role_assignment)-[:GRANTS_ADMIN_ROLE__okta]->(b:okta__okta_admin_role)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN a, b"
               ]
             },
@@ -520,9 +553,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -541,13 +577,13 @@
           },
           "node": {
             "name": "okta — scene edges: assignment → its scope",
-            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "description": "One drawn edge type of the /okta graph, scoped to one org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta reaches the same org variable), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
             "search_type": "gryphon",
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_role_assignment)-[:SCOPED_TO_RESOURCE__okta]->(b)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_role_assignment)-[:SCOPED_TO_RESOURCE__okta]->(b)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN a, b"
               ]
             },
@@ -555,9 +591,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -576,13 +615,13 @@
           },
           "node": {
             "name": "okta — scene edges: application → group it masters",
-            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "description": "One drawn edge type of the /okta graph, scoped to one org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta reaches the same org variable), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
             "search_type": "gryphon",
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_application)-[:IMPORTS_GROUP__okta]->(b:okta__okta_group)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_application)-[:IMPORTS_GROUP__okta]->(b:okta__okta_group)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN a, b"
               ]
             },
@@ -590,9 +629,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -611,13 +653,13 @@
           },
           "node": {
             "name": "okta — scene edges: rule → network zone",
-            "description": "One drawn edge type of the /okta graph, scoped to the org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
+            "description": "One drawn edge type of the /okta graph, scoped to one org at BOTH ends (each endpoint's BELONGS_TO_ORG__okta reaches the same org variable), so a cross-org edge never pulls a foreign node onto this org's page. Named, never an unfiltered edge search (tap#402): the scene draws exactly the edge types listed across the okta scene searches.",
             "search_type": "gryphon",
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy_rule)-[:MATCHES_NETWORK_ZONE__okta]->(b:okta__okta_network_zone)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(a:okta__okta_policy_rule)-[:MATCHES_NETWORK_ZONE__okta]->(b:okta__okta_network_zone)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN a, b"
               ]
             },
@@ -625,9 +667,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -652,7 +697,7 @@
             "definition": {
               "query": [
                 "MATCH (o:okta__okta_org)-[:REQUESTS_SECOND_FACTOR__duo]->(d)<-[:HOLDS_ACCOUNT_OBJECT__duo]-(a)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN o, d, a"
               ]
             },
@@ -660,9 +705,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -776,7 +824,7 @@
             "definition": {
               "query": [
                 "MATCH (n:okta__okta_application)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN n"
               ]
             },
@@ -784,9 +832,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -900,8 +951,8 @@
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p)-[e:ASSIGNED_APPLICATION__okta]->(a:okta__okta_application)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p)-[e:ASSIGNED_APPLICATION__okta]->(a:okta__okta_application)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN a.data.label AS application, a.data.sign_on_mode AS sign_on_mode, p.name AS assignee, p.entity_type AS assignee_type, e.data.properties.scope AS scope, e.data.properties.priority AS priority, e.data.properties.status AS status, a.entity_id AS application_id",
                 "ORDER BY application"
               ]
@@ -910,9 +961,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -1024,9 +1078,9 @@
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p)-[:HOLDS_ROLE_ASSIGNMENT__okta]->(ra:okta__okta_role_assignment)-[:GRANTS_ADMIN_ROLE__okta]->(r:okta__okta_admin_role)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
-                "AND (ra.data.org_name = $org OR o.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p)-[:HOLDS_ROLE_ASSIGNMENT__okta]->(ra:okta__okta_role_assignment)-[:GRANTS_ADMIN_ROLE__okta]->(r:okta__okta_admin_role)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
+                "AND ($org IS NULL OR ra.data.org_name = $org)",
                 "RETURN p.name AS holder, p.entity_type AS holder_type, r.data.name AS role, r.data.role_type AS role_type, ra.data.assignment_type AS assignment_type, ra.data.status AS status",
                 "ORDER BY role"
               ]
@@ -1035,9 +1089,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -1167,8 +1224,8 @@
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p:okta__okta_policy)-[:EVALUATES_RULE__okta]->(r:okta__okta_policy_rule)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p:okta__okta_policy)-[:EVALUATES_RULE__okta]->(r:okta__okta_policy_rule)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "AND p.data.policy_type IN [\"OKTA_SIGN_ON\", \"ACCESS_POLICY\"]",
                 "RETURN p.data.name AS policy, p.data.policy_type AS policy_type, r.data.name AS rule, r.data.priority AS priority, r.data.status AS status, r.data.access AS access, r.data.factor_mode AS factor_mode, r.data.reauthenticate_in AS reauthenticate_in",
                 "ORDER BY policy"
@@ -1178,9 +1235,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -1322,9 +1382,9 @@
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p:okta__okta_policy)-[:EVALUATES_RULE__okta]->(r:okta__okta_policy_rule)-[e:REQUIRES_AUTHENTICATOR__okta]->(a:okta__okta_authenticator)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
-                "AND (r.data.org_name = $org OR o.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p:okta__okta_policy)-[:EVALUATES_RULE__okta]->(r:okta__okta_policy_rule)-[e:REQUIRES_AUTHENTICATOR__okta]->(a:okta__okta_authenticator)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
+                "AND ($org IS NULL OR r.data.org_name = $org)",
                 "RETURN p.data.name AS policy, r.data.name AS rule, a.data.name AS authenticator, a.data.authenticator_key AS authenticator_key, e.data.properties.constraint AS constraint, e.data.properties.phishing_resistant AS phishing_resistant, e.data.properties.hardware_protected AS hardware_protected",
                 "ORDER BY policy"
               ]
@@ -1333,9 +1393,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -1438,7 +1501,7 @@
             "definition": {
               "query": [
                 "MATCH (n:okta__okta_authenticator)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN n"
               ]
             },
@@ -1446,9 +1509,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -1542,8 +1608,8 @@
             "root": "node",
             "definition": {
               "query": [
-                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p:okta__okta_policy)-[e:ENROLLS_AUTHENTICATOR__okta]->(a:okta__okta_authenticator)-[:BELONGS_TO_ORG__okta]->(o2:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org) AND (o2.data.name = $org OR o2.entity_type = $org)",
+                "MATCH (o:okta__okta_org)<-[:BELONGS_TO_ORG__okta]-(p:okta__okta_policy)-[e:ENROLLS_AUTHENTICATOR__okta]->(a:okta__okta_authenticator)-[:BELONGS_TO_ORG__okta]->(o)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN p.data.name AS policy, p.data.priority AS priority, a.data.name AS authenticator, e.data.properties.enroll AS enroll",
                 "ORDER BY policy"
               ]
@@ -1552,9 +1618,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -1642,7 +1711,7 @@
             "definition": {
               "query": [
                 "MATCH (n:okta__okta_user)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "AND n.data.status != \"ACTIVE\"",
                 "RETURN n"
               ]
@@ -1651,9 +1720,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -1761,7 +1833,7 @@
             "definition": {
               "query": [
                 "MATCH (n:okta__okta_user)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN n"
               ]
             },
@@ -1769,9 +1841,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -1873,7 +1948,7 @@
             "definition": {
               "query": [
                 "MATCH (n:okta__okta_api_token)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN n"
               ]
             },
@@ -1881,9 +1956,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -1978,7 +2056,7 @@
             "definition": {
               "query": [
                 "MATCH (n:okta__okta_identity_provider)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN n"
               ]
             },
@@ -1986,9 +2064,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -2104,7 +2185,7 @@
             "definition": {
               "query": [
                 "MATCH (n:okta__okta_authorization_server)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN n"
               ]
             },
@@ -2112,9 +2193,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -2208,7 +2292,7 @@
             "definition": {
               "query": [
                 "MATCH (n:okta__okta_network_zone)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN n"
               ]
             },
@@ -2216,9 +2300,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -2329,7 +2416,7 @@
             "definition": {
               "query": [
                 "MATCH (n:okta__okta_trusted_origin)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN n"
               ]
             },
@@ -2337,9 +2424,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
@@ -2426,7 +2516,7 @@
             "definition": {
               "query": [
                 "MATCH (n:okta__okta_log_stream)-[:BELONGS_TO_ORG__okta]->(o:okta__okta_org)",
-                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "WHERE ($org IS NULL OR o.data.name = $org)",
                 "RETURN n"
               ]
             },
@@ -2434,9 +2524,12 @@
               "type": "object",
               "properties": {
                 "org": {
-                  "type": "string",
-                  "default": "okta__okta_org",
-                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, it is null and every org matches ($org IS NULL): the one org on a single-org grid."
                 }
               },
               "additionalProperties": false
