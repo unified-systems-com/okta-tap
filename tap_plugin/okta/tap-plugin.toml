@@ -6,10 +6,12 @@ name = "TAP Okta"
 description = "Okta workforce identity as grid vocabulary: the org and the objects a FedRAMP operator answers for in it (users, groups, applications, authorization servers, identity providers, authenticators, policies, network zones, admin roles, API tokens, devices, log streams), with an org page."
 
 # Vocabulary dependency (add-edge, cross-plugin endpoints): SERVES_ISSUER__okta targets identity_core's
-# neutral OIDC issuer, and an OIDC identity provider reaches its issuer by identity_core's own
-# TRUSTS_ISSUER__identity_core. No Python import; install + migrate order only.
+# neutral OIDC issuer, an OIDC identity provider reaches its issuer by identity_core's own
+# TRUSTS_ISSUER__identity_core, and an Okta user is held by identity_core's human
+# (HELD_BY_HUMAN__identity_core, declared in OktaUser.OUTBOUND_EDGES). No Python import; install +
+# migrate order only.
 depends_on = [
-    { slug = "identity_core", note = "Vocabulary dependency: SERVES_ISSUER__okta targets identity_core__oidc_issuer, the neutral issuer a relying service's TRUSTS_ISSUER edge also lands on." },
+    { slug = "identity_core", note = "Vocabulary dependency: SERVES_ISSUER__okta targets identity_core__oidc_issuer, the neutral issuer a relying service's TRUSTS_ISSUER edge also lands on; okta__okta_user declares HELD_BY_HUMAN__identity_core to identity_core__human, the one person every system's account resolves to." },
 ]
 
 # Pure Python, no dependencies, no crypto (spec-fips.md, req-tap-plugin-manifest-v0-fips).
@@ -60,7 +62,6 @@ INCLUDES_RESOURCE__okta = "edges/INCLUDES_RESOURCE.edge.json"
 ACTS_AS_USER__okta = "edges/ACTS_AS_USER.edge.json"
 REGISTERED_DEVICE__okta = "edges/REGISTERED_DEVICE.edge.json"
 WRITES_LOGS__okta = "edges/WRITES_LOGS.edge.json"
-IDENTIFIES_PERSON__okta = "edges/IDENTIFIES_PERSON.edge.json"
 
 [grift]
 okta_page = "grift/okta-page.grift.json"
@@ -70,4 +71,4 @@ okta_page = "grift/okta-page.grift.json"
 [[boot.records]]
 name = "ci"
 description = "RESERVED NAME (req-boot-bootstrap-ci-record): the stack this plugin's own tests run in — depends_on closure (identity_core) + self, offline, credential-free. The consumer flips self to editable."
-sha256 = "8a1e3e5de0f47dd7f04f865d4f17a96d4b8f541aedc0c062ea4d6c73b3b002ce"
+sha256 = "0314d73991876b18bdde9d53e9c8267df13cf485af9c19d1822f553f798354aa"

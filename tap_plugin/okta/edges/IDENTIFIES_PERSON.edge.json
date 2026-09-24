@@ -1,8 +1,0 @@
-{
-  "slug": "IDENTIFIES_PERSON__okta",
-  "name": "Identifies Person",
-  "description": "An Okta user account identifies a person. The target is OPEN (omitted): the neutral person type is a substrate question (computing_core__user exists today; identity_core has no person type yet), and one person holds an account in several orgs.",
-  "sources": [
-    "okta__okta_user"
-  ]
-}

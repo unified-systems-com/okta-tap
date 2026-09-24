@@ -11,8 +11,9 @@ class OktaUser(BaseModel):
     """A user account in an Okta org: one login, its lifecycle status and when it last signed in.
 
     A person's (or a service identity's) account in one Okta org. The account, not the person: the
-    same human holds one account per org, and the link to a neutral person node is the open-ended
-    IDENTIFIES_PERSON__okta edge.
+    same human holds one account per org, and each points at the one ``identity_core__human`` with
+    ``HELD_BY_HUMAN__identity_core``. That edge is drawn by whoever knows the match (an operator's
+    seed, an HR feed, a collector matching an immutable id), never inferred from ``email``.
 
     Spec: specs/spec-okta-v0.md (req-okta-corpus).
     """
@@ -27,6 +28,13 @@ class OktaUser(BaseModel):
     # login is unique within an org and is what a design names; the key is revisited to (org_name,
     # okta_id) when the collector makes okta_id observable, since a login can be renamed.
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'login')
+    # The person behind the account (req-okta-person). Under the permission union
+    # (spec-grid-edge.md, req-grid-edge-constraints-3) this adds a permission and constrains nothing
+    # else: the okta edge files still permit the user's own okta edges (BELONGS_TO_ORG, MEMBER_OF_GROUP,
+    # ...). It names the foreign edge here because identity_core's edge leaves its source open.
+    OUTBOUND_EDGES: ClassVar[list[dict[str, Any]]] = [
+        {"nodes": [{"type": "identity_core__human"}], "edges": [{"type": "HELD_BY_HUMAN__identity_core"}]},
+    ]
     DEFAULT_DISPLAY: ClassVar[dict[str, Any]] = {
         "tap_viz": {
             "shape": "ellipse",

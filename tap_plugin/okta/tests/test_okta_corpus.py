@@ -164,7 +164,7 @@ def test_same_name_in_two_orgs_is_two_nodes() -> None:
 
 def test_edge_files_match_manifest() -> None:
     """req-okta-edges-1: slug == manifest key == file; every property schema is closed."""
-    assert len(EDGE_SLUGS) == 24
+    assert len(EDGE_SLUGS) == 23
     for slug, rel in MANIFEST["edges"].items():
         data = json.loads((PKG / rel).read_text())
         assert data["slug"] == slug
@@ -244,7 +244,7 @@ class TestEdgeBehaviour:
         assert _edge(server, str(issuer), "SERVES_ISSUER__okta")
 
     def test_open_ended_edges_accept_a_foreign_node(self) -> None:
-        """SENDS_ASSERTION / DELEGATES_VERIFICATION / WRITES_LOGS / IDENTIFIES_PERSON name no target type."""
+        """SENDS_ASSERTION / DELEGATES_VERIFICATION / WRITES_LOGS name no target type."""
         foreign = str(
             write_batch(
                 [WriteOperation(verb="create_node", type_slug="identity_core__oidc_issuer", payload={"issuer_url": "https://relying.example"})],
