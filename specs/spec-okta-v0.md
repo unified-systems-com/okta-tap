@@ -230,7 +230,7 @@ identity: the edge is drawn by whoever knows the match and records how in `match
 | ACID | Title | Status | Description | Notes |
 | --- | --- | :---: | --- | --- |
 | req-okta-person-1 | Declared On The User | Implemented | `OktaUser` declares `HELD_BY_HUMAN__identity_core` to `identity_core__human`; `identity_core` is in `depends_on`; `IDENTIFIES_PERSON__okta` is no longer shipped. | `test_person_link_is_declared` |
-| req-okta-person-2 | Written Through The Service Layer | Implemented | An Okta user writes the edge to a human with `matched_on`; an unknown property is refused. | `test_user_is_held_by_a_human` |
+| req-okta-person-2 | Written Through The Service Layer | Implemented | An Okta user writes the edge to a human with `matched_on`; an unknown property is refused (on a fresh pair). | `test_user_is_held_by_a_human`, `test_unknown_property_is_refused` |
 | req-okta-person-3 | Shared Account Recorded | Implemented | One Okta user may be held by two humans; both edges stand. | `test_shared_account_is_recorded` |
 
 ---

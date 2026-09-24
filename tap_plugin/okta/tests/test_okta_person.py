@@ -54,7 +54,17 @@ def test_user_is_held_by_a_human() -> None:
     result = _held(user, human, {"matched_on": "operator seed"})
     assert result.success, result
     assert Edge.objects.get(entity_id=result.entity_id).properties == {"matched_on": "operator seed"}
-    assert not _held(user, human, {"matched_by": "email"}).success
+
+
+@pytest.mark.django_db
+def test_unknown_property_is_refused() -> None:
+    """req-okta-person-2: on a fresh pair, so the refusal is the closed property schema and nothing else."""
+    human = _node(HUMAN, {"handle": "t-0003"})
+    user = _node("okta__okta_user", {"org_name": "acme", "login": "fresh@example.test"})
+    refused = _held(user, human, {"matched_by": "email"})
+    assert not refused.success
+    assert "matched_by" in " ".join(str(e) for e in refused.errors)
+    assert not Edge.objects.filter(from_entity_id=user, edge_type=HELD).exists()
 
 
 @pytest.mark.django_db
