@@ -85,7 +85,7 @@ edge seeded by an instance's design is *designed* (`dcom: design`).
 | req-okta-corpus | [Corpus Node Types](#corpus-node-types) | Implemented | The seventeen types inside an org, their keys, icons and domain articles |
 | req-okta-edges | [Corpus Edge Types](#corpus-edge-types) | Implemented | Twenty-three edges; open ends and the one substrate target |
 | req-okta-person | [Person Link](#person-link) | Implemented | An Okta user is held by `identity_core__human` (`HELD_BY_HUMAN__identity_core`) |
-| req-okta-page-org | [Page: Org](#page-org) | In Development | `/okta?org=<org name>`: the graph, then fifteen tables; bundle and searches verified in tests, browser rendering not yet observed |
+| req-okta-page-org | [Page: Org](#page-org) | Implemented | `/okta?org=<org name>`: the graph (the org as the outer box, labelled edges, the Duo link both ways), then fifteen tables; observed in a browser 2026-09-24 |
 | req-okta-record | [CI Record and Tests](#ci-record-and-tests) | Implemented | The in-package `ci` boot record and the suite |
 | req-okta-collector | [Collector](#collector) | Backlog | Observe a real Okta org onto the grid |
 | req-okta-backlog-oauth-grants | [OAuth Scopes, Claims And Grants](#oauth-scopes-claims-and-grants) | Backlog | Scopes, claims, authorization-server policies and client grants as first-class |
@@ -218,8 +218,8 @@ wildcard so the substrate never depends on this plugin.
 "HELD_BY_HUMAN__identity_core"}]}`. Under the permission union (`req-grid-edge-constraints-3`) this adds a
 permission and constrains nothing else: the okta edge files still permit the user's own edges.
 `identity_core` is already the plugin's one `depends_on` (a vocabulary dependency); the `ci` record pins
-it at `53da388b6f47590090ef3bdc8d98731acff4c8e2`, the first main commit carrying the human (no tagged
-release does yet, so no `min_version` floor is declared). This retired the corpus's own
+it at `53da388b6f47590090ef3bdc8d98731acff4c8e2`, the commit of identity_core's `v0.1.3` tag, the first
+release carrying the human, and `depends_on` declares that release as the floor (`min_version = "0.1.3"`). This retired the corpus's own
 `IDENTIFIES_PERSON__okta` (user → open target), which recorded the same relationship while no substrate
 owned a person type: two edges for one relationship is the one-edge-one-relationship defect. Email is not
 identity: the edge is drawn by whoever knows the match and records how in `matched_on`; nothing joins on
@@ -229,7 +229,7 @@ identity: the edge is drawn by whoever knows the match and records how in `match
 
 | ACID | Title | Status | Description | Notes |
 | --- | --- | :---: | --- | --- |
-| req-okta-person-1 | Declared On The User | Implemented | `OktaUser` declares `HELD_BY_HUMAN__identity_core` to `identity_core__human`; `identity_core` is in `depends_on`; `IDENTIFIES_PERSON__okta` is no longer shipped. | `test_person_link_is_declared` |
+| req-okta-person-1 | Declared On The User | Implemented | `OktaUser` declares `HELD_BY_HUMAN__identity_core` to `identity_core__human`; `identity_core` is in `depends_on` with `min_version = "0.1.3"`; `IDENTIFIES_PERSON__okta` is no longer shipped. | `test_person_link_is_declared` |
 | req-okta-person-2 | Written Through The Service Layer | Implemented | An Okta user writes the edge to a human with `matched_on`; an unknown property is refused (on a fresh pair). | `test_user_is_held_by_a_human`, `test_unknown_property_is_refused` |
 | req-okta-person-3 | Shared Account Recorded | Implemented | One Okta user may be held by two humans; both edges stand. | `test_shared_account_is_recorded` |
 
@@ -239,7 +239,7 @@ identity: the edge is drawn by whoever knows the match and records how in `match
 ----
 RID: `req-okta-page-org`
 
-Status: `In Development`
+Status: `Implemented`
 
 `/okta` — one Okta org as its operator's front page in a live FedRAMP 20x environment. The graph at the
 top, then the tables an assessor asks about first. Reached by direct URL or the site navigation
@@ -247,7 +247,7 @@ top, then the tables an assessor asks about first. Reached by direct URL or the 
 
 #### Implementation
 
-`grift/okta-page.grift.json` (manifest `[grift] okta_page`), one batch `okta: org page v0.1.0`: the page
+`grift/okta-page.grift.json` (manifest `[grift] okta_page`), one batch `okta: org page v0.2.0`: the page
 node, sixteen `USES_PANEL` edges, a graph panel and fifteen standard table panels, each table over one
 search. Every id is defined in the bundle; nothing names an org or an entity id outside it.
 
@@ -269,20 +269,43 @@ search. Every id is defined in the bundle; nothing names an org or an entity id 
   sentinel.
 - **Graph** (`org-graph`, row height `66vh`). `tap_viz/panels/graph_panel.html` over the `okta org`
   projection (`node_style: icon-badge`, `lock_nodes`, `min_zoom: fit`), one elevation, one layout,
-  `static/okta/js/projections/okta-org.js`. Fifteen scene searches: the org; what it holds (applications,
+  `static/okta/js/projections/okta-org.js`. Sixteen scene searches: the org; what it holds (applications,
   groups, policies and rules, authenticators, identity providers, authorization servers, admin roles and
   assignments, resource sets, network zones, trusted origins, log streams, via `n.entity_type IN [...]`);
   and one search per drawn edge type (`ASSIGNED_APPLICATION` from groups, `BOUND_TO_POLICY`,
   `EVALUATES_RULE`, `REQUIRES_AUTHENTICATOR`, `ENROLLS_AUTHENTICATOR`, `APPLIES_TO_GROUP`,
   `ROUTES_AUTHENTICATION`, `ASSIGNS_GROUP_MEMBERSHIP` from IdPs, `HOLDS_ROLE_ASSIGNMENT` from groups and
   service apps, `GRANTS_ADMIN_ROLE`, `SCOPED_TO_RESOURCE`, `IMPORTS_GROUP`, `MATCHES_NETWORK_ZONE`), never
-  an unfiltered edge search. Users, devices, API tokens and group rules are left to the tables.
-- **Layout module** `okta-org.js` (reusable; exports `FAMILIES`): the org at the centre of a 3x3 grid of
-  family boxes: Federation, Authenticators, Network above; Groups left and Applications right (so
-  assignment edges cross the centre); Administration and Policies below, each policy's rules nested
-  inside it by `EVALUATES_RULE__okta`. Family boxes are synthetic containers added and removed on every
-  entry; `BELONGS_TO_ORG__okta` edges are hidden because the boxes say it. A type no family names is drawn
-  in an Other box and reported as a warning, never dropped; each org in the scene gets its own grid.
+  an unfiltered edge search; and one cross-vendor search, below. Users, devices, API tokens and group
+  rules are left to the tables.
+- **The Duo relationship.** /duo draws an Okta org sending its users to a Duo application for a second
+  factor (`REQUESTS_SECOND_FACTOR__duo`, whose source duo leaves open). /okta draws the same edge from its
+  side: `MATCH (o:okta__okta_org)-[:REQUESTS_SECOND_FACTOR__duo]->(d)<-[:HOLDS_ACCOUNT_OBJECT__duo]-(a)`,
+  the org scoped like every other search, returning the Duo application and the Duo account that holds
+  it. The pattern names duo's edge types and never its node types: an unknown edge type filters to
+  nothing, while an unknown node label is an execution error, so on a grid without duo (okta's own `ci`
+  record) the search matches nothing and the graph still draws. okta declares no dependency on duo.
+- **Click-through.** The graph panel's config carries `nav_rules` (spec-viz-panel.md,
+  `req-viz-panel-click-semantics-8`): the Duo account navigates to `/duo?account={data.name}`, the Duo
+  application (which carries no account name) to `/duo`. /duo carries the mirror rule, an Okta org to
+  `/okta?org={data.name}`. This is the narrow form, a page path named in the other vendor's panel config.
+  The generic form, where the plugin that owns a node type declares the page that answers for it and
+  every graph panel routes by it, does not exist in tap_viz yet.
+- **Layout module** `okta-org.js` (reusable; exports `FAMILIES` and `humanizeEdgeType`): the org is the
+  outer box, holding a 3x3 grid of family boxes: Federation, Authenticators, Network at the top; Groups
+  left and Applications right with the centre cell left open (so assignment edges cross it);
+  Administration and Policies at the bottom, each policy's rules nested inside it by
+  `EVALUATES_RULE__okta`. Family boxes are synthetic containers, joined to their members by
+  `_OKTA_FAMILY_HOLDS` and to their org by `_OKTA_ORG_HOLDS`, added and removed on every entry; the nesting
+  pass (spec-viz-nested-projection.md) sizes every box, then the module places the families on the grid
+  and re-fits the org around them. `BELONGS_TO_ORG__okta` edges are hidden because the containers say it.
+  A node of another system's type (not `okta__`) joins no family: it is drawn in a column right of the org
+  it connects to, the Duo application inside its Duo account (a dashed box, nested by
+  `HOLDS_ACCOUNT_OBJECT__duo`). Every drawn edge is labelled with its type, humanized
+  (`EVALUATES_RULE__okta` → "evaluates rule"): `applyStandardChrome(cy, {edgeLabels: true})` keeps the
+  label and the module sets its text, since tap_viz has no humanized edge-label option. An okta type no
+  family names is drawn in an Other box and reported as a warning, never dropped; each org in the scene
+  gets its own container.
 - **Tables**, in order: Applications; Who is assigned each application; Admin role assignments; Sign-on
   rules and their factor requirement; Authenticators each rule requires; Authenticators; Authenticator
   enrollment policies; Users who are not active; Sign-in recency; API tokens; Inbound federation;
@@ -304,8 +327,9 @@ search. Every id is defined in the bundle; nothing names an org or an entity id 
 | req-okta-page-org-3 | Icon-Badge, Named Edges | Implemented | The projection's `node_style` is `icon-badge`; no scene search matches an untyped edge; every search's `org` input defaults to the every-org sentinel. | |
 | req-okta-page-org-4 | Reusable | Implemented | Every id an edge names is defined in the bundle. | |
 | req-okta-page-org-5 | One Org At A Time | Implemented | Imported with a seeded org, a second org and cross-org edges between them (a foreign node at either end of a join, and in the middle of a longer path), every search returns the seeded org's rows and none of the other's; `?org=a` does not match an org named `aba`; `?org` absent returns every org; an org cannot be named the sentinel. | Real search path (`execute_search`), both databases. |
-| req-okta-page-org-6 | Layout Places Without Overlap | Implemented | Run headless over a seeded scene, the module draws every family, nests rules in policies, reports an unmapped type, and no top-level boxes overlap. | Exercised under JavaScriptCore with the vendored Cytoscape (2026-09-22); not a shipped test (no JS runner in CI). |
-| req-okta-page-org-7 | Renders In A Browser | In Development | `/okta` renders on a booted stack with every slot filled and no console error from the graph's layout. | Not observed: needs the stack booted with this plugin's migration and bundle, then `drive-browser`. |
+| req-okta-page-org-6 | Layout Places Without Overlap | Implemented | The org container holds every family box, rules nest in their policies, an unmapped type is reported, no family boxes overlap, the Duo account sits outside the org, and every drawn edge carries its humanized type as a label. | v0.1.0 layout exercised under JavaScriptCore with the vendored Cytoscape (2026-09-22); v0.2.0 observed in a browser on the highbar stack (2026-09-24). Not a shipped test (no JS runner in CI). |
+| req-okta-page-org-7 | Renders In A Browser | Implemented | `/okta` renders on a booted stack with every slot filled and no console error from the graph's layout. | Observed 2026-09-24 on the highbar stack with `drive-browser`: the graph and all fifteen tables rendered, console clean. |
+| req-okta-page-org-8 | The Duo Link, Both Ways | Implemented | The cross-vendor search names duo's edge types and no duo node type, and okta declares no dependency on duo; with duo installed it returns the org's Duo application and account and none of another org's; without duo it runs and matches nothing. The graph panel's `nav_rules` route the Duo account to `/duo?account=<its name>` and the Duo application to `/duo`; the org itself does not navigate. | `test_duo_link_is_open_ended_and_navigable`, `test_every_search_answers_for_one_org`. Clicked through in a browser on the highbar stack (2026-09-24). |
 
 ---
 
@@ -320,7 +344,7 @@ The in-package `ci` boot record (`req-boot-bootstrap-ci-record`) and the tests t
 #### Implementation
 
 `tap_plugin/okta/boot/ci.boot.json` installs identity_core (pinned at
-`53da388b6f47590090ef3bdc8d98731acff4c8e2`, the main commit carrying `identity_core__human`) and self, offline and credential-free, and seeds the plugin's
+`53da388b6f47590090ef3bdc8d98731acff4c8e2`, the commit of its `v0.1.3` tag, the `depends_on` floor) and self, offline and credential-free, and seeds the plugin's
 own GRIFT; the consumer flips self to editable. Tests: `test_okta_manifest.py` (`validate_plugin` at
 structure and strict), `test_okta_org.py`, `test_okta_corpus.py`, `test_okta_page.py`, `test_okta_person.py`.
 

@@ -28,6 +28,22 @@ def _nodes(entity_type: str) -> list[dict[str, Any]]:
     return [n for b in _bundle()["batches"] for n in b["nodes"] if n["entity"]["entity_type"] == entity_type]
 
 
+#: The one cross-vendor scene search: the Duo application an org requests a second factor from.
+CROSS_VENDOR = "okta — scene edges: org → Duo application it requests a second factor from (cross-vendor)"
+
+
+def _duo_installed() -> bool:
+    """Whether duo's types are registered here. okta's own CI record does not install duo; a stack that
+    runs both (highbar) does, and there the cross-vendor search is exercised against real duo nodes."""
+    from tap_grid.registry import get_model_class
+
+    try:
+        get_model_class("duo__duo_account")
+    except KeyError:
+        return False
+    return True
+
+
 class _Seed:
     def __init__(self) -> None:
         self.ctx = CallerContext()
@@ -111,6 +127,13 @@ def _seed_org(s: _Seed) -> None:
     s.edge(i["other-ra"], i["role"], "GRANTS_ADMIN_ROLE__okta")
     s.edge(i["policy"], i["other-rule"], "EVALUATES_RULE__okta", {"priority": 2})
     s.edge(i["other-rule"], i["duo"], "REQUIRES_AUTHENTICATOR__okta", {"constraint": "possession"})
+    if _duo_installed():
+        # Each org sends its users to its own Duo application, held by its own Duo account.
+        for org in ("acme", "other"):
+            s.node(f"{org}-duo-account", "duo__duo_account", name=f"{org} Duo")
+            s.node(f"{org}-duo-app", "duo__duo_application", name=f"Okta ({org})", integration_type="okta")
+            s.edge(i[f"{org}-duo-account"], i[f"{org}-duo-app"], "HOLDS_ACCOUNT_OBJECT__duo")
+            s.edge(i[org], i[f"{org}-duo-app"], "REQUESTS_SECOND_FACTOR__duo", {"mechanism": "universal_prompt"})
 
 
 def test_bundle_is_registered_and_names_its_layout() -> None:
@@ -164,18 +187,52 @@ def test_every_search_answers_for_one_org() -> None:
     assert grift_import(_bundle()).success
     s = _Seed()
     _seed_org(s)
-    other_ids = {s.ids[k] for k in ("other", "other-app", "other-group", "other-role", "other-ra", "other-rule")}
+    other_keys = ["other", "other-app", "other-group", "other-role", "other-ra", "other-rule"]
+    duo = _duo_installed()
+    if duo:
+        other_keys += ["other-duo-account", "other-duo-app"]
+    other_ids = {s.ids[k] for k in other_keys}
     foreign_names = ("Other group", "Other role", "Other assignment", "Other rule")
     for spec in _nodes("search"):
         search = Search.objects.get(entity_id=spec["entity"]["entity_id"])
         env = execute_search(search, inputs={"org": "acme"})
         env = env.get("results", env)
         got = len(env.get("nodes", [])) + len(env.get("rows", []))
+        if spec["entity"]["name"] == CROSS_VENDOR and not duo:
+            # req-okta-page-org-8: without duo the cross-vendor search runs and matches nothing.
+            assert got == 0, f"{search.name}: matched without duo installed"
+            continue
         assert got > 0, f"{search.name}: nothing for the seeded org"
         ids = {str(n["entity_id"]) for n in env.get("nodes", [])}
         assert not ids & other_ids, f"{search.name}: leaked another org's nodes"
         flat = json.dumps(env.get("rows", []))
         assert not [n for n in foreign_names if n in flat], f"{search.name}: leaked another org's rows"
+
+
+def test_duo_link_is_open_ended_and_navigable() -> None:
+    """req-okta-page-org-8: the cross-vendor search names duo's edge types, never its node types, okta declares no
+    dependency on duo, and the graph panel routes a click on the Duo account to /duo for that account."""
+    import tomllib
+
+    from tap_viz.panels.graph_panel import _apply_nav_rules
+
+    (spec,) = [n for n in _nodes("search") if n["entity"]["name"] == CROSS_VENDOR]
+    query = " ".join(spec["node"]["definition"]["query"])
+    assert "REQUESTS_SECOND_FACTOR__duo" in query
+    assert ":duo__" not in query, "naming a duo node type would fail the search on a grid without duo"
+    uses = {e["edge"]["to_entity_id"] for b in _bundle()["batches"] for e in b["edges"] if e["edge"]["edge_type"] == "USES_SEARCH"}
+    assert spec["entity"]["entity_id"] in uses
+    manifest = tomllib.loads((PKG / "tap-plugin.toml").read_text())
+    assert "duo" not in {d["slug"] for d in manifest.get("depends_on", [])}
+
+    (panel,) = [n for n in _nodes("panel") if n["node"].get("view") == "tap_viz/panels/graph_panel.html"]
+    account = {"entity_type": "duo__duo_account", "data": {"name": "Acme Duo"}}
+    app = {"entity_type": "duo__duo_application", "data": {"name": "Okta"}}
+    org = {"entity_type": "okta__okta_org", "data": {"name": "acme"}}
+    _apply_nav_rules([account, app, org], panel["node"]["config"]["nav_rules"], "okta-org-graph")
+    assert account["display"]["tap_viz"]["nav_url"] == "/duo?account=Acme%20Duo"
+    assert app["display"]["tap_viz"]["nav_url"] == "/duo"
+    assert "display" not in org, "the org is this page; clicking it goes nowhere"
 
 
 @READS_THROUGH_GRYPHON

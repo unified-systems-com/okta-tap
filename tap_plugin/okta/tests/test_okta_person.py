@@ -34,14 +34,16 @@ def _held(src: str, dst: str, properties: dict | None = None):
 
 
 def test_person_link_is_declared() -> None:
-    """req-okta-person-1: the user names the edge and the human; the edge's owner is a declared dependency;
-    the retired open-ended person edge is no longer shipped."""
+    """req-okta-person-1: the user names the edge and the human; the edge's owner is a declared dependency,
+    floored at the release that ships the human; the retired open-ended person edge is no longer shipped."""
     declared = {
         (e["type"], n["type"]) for entry in OktaUser.OUTBOUND_EDGES for e in entry["edges"] for n in entry.get("nodes", [])
     }
     assert declared == {(HELD, HUMAN)}
     manifest = tomllib.loads((PKG / "tap-plugin.toml").read_text())
-    assert "identity_core" in {d["slug"] for d in manifest.get("depends_on", [])}
+    deps = {d["slug"]: d for d in manifest.get("depends_on", [])}
+    # The floor is the first identity_core release that ships identity_core__human.
+    assert deps["identity_core"].get("min_version") == "0.1.3"
     assert "IDENTIFIES_PERSON__okta" not in manifest["edges"]
     assert not (PKG / "edges" / "IDENTIFIES_PERSON.edge.json").exists()
 
