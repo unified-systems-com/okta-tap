@@ -11,7 +11,7 @@
           "url": "https://github.com/unified-systems-com/tap-plugin-identity-core",
           "rev": "53da388b6f47590090ef3bdc8d98731acff4c8e2"
         },
-        "note": "Vocabulary dependency, pinned at the main commit carrying identity_core__human and HELD_BY_HUMAN__identity_core as well as identity_core__oidc_issuer (no tagged release carries the human yet; v0.1.2 predates it). Offline and credential-free."
+        "note": "Vocabulary dependency, pinned at the full commit of the v0.1.3 tag (this plugin's depends_on floor), the first release carrying identity_core__human and HELD_BY_HUMAN__identity_core as well as identity_core__oidc_issuer. Offline and credential-free."
       },
       {
         "slug": "okta",

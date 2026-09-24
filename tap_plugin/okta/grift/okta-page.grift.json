@@ -6,15 +6,15 @@
   "batches": [
     {
       "batch_entity": {
-        "entity_id": "01a0cc72-bb1d-7622-8104-6bfda3791a6b",
+        "entity_id": "01a0d48c-19ba-7158-91e7-c44259377c18",
         "entity_type": "batch",
-        "name": "okta: org page v0.1.0",
+        "name": "okta: org page v0.2.0",
         "dimensions": {}
       },
       "batch_node": {
         "source": "tap_plugin.okta.grift.okta_page",
-        "name": "okta: org page v0.1.0",
-        "description": "The /okta page (req-okta-page-org): one page, a graph panel over a projection with the okta-org.js layout and its org-scoped scene searches, and fifteen standard table panels, each over one org-scoped search. Every search takes ?org=<org name>; nothing here names an org or an entity id outside this bundle."
+        "name": "okta: org page v0.2.0",
+        "description": "The /okta page (req-okta-page-org): one page, a graph panel over a projection with the okta-org.js layout and its org-scoped scene searches (one of them cross-vendor: the Duo application the org sends users to for a second factor, and the Duo account holding it), and fifteen standard table panels, each over one org-scoped search. Every search takes ?org=<org name>; nothing here names an org or an entity id outside this bundle. v0.2.0: the org is the outer box of the picture, every drawn edge is labelled with its type, the Duo relationship /duo draws is drawn here too, and clicking the Duo account opens /duo for it."
       },
       "nodes": [
         {
@@ -637,6 +637,41 @@
         },
         {
           "entity": {
+            "entity_id": "01a0d48c-19ba-7158-91e7-c4436ba3185a",
+            "entity_type": "search",
+            "name": "okta — scene edges: org → Duo application it requests a second factor from (cross-vendor)",
+            "dimensions": {
+              "tap.graph": "web"
+            }
+          },
+          "node": {
+            "name": "okta — scene edges: org → Duo application it requests a second factor from (cross-vendor)",
+            "description": "The same relationship /duo draws from its side: an Okta org sending its users to a Duo application for a second factor (REQUESTS_SECOND_FACTOR__duo, whose source duo leaves open), with the Duo account that holds that application (HOLDS_ACCOUNT_OBJECT__duo), so the layout can draw the account as a box outside the org. Cross-vendor and open-ended: okta declares no dependency on duo, and the pattern names duo's edge types only, never its node types, so on a grid without duo the search matches nothing and the graph draws the org alone. The org end is scoped like every other search here; the Duo end belongs to no Okta org.",
+            "search_type": "gryphon",
+            "root": "node",
+            "definition": {
+              "query": [
+                "MATCH (o:okta__okta_org)-[:REQUESTS_SECOND_FACTOR__duo]->(d)<-[:HOLDS_ACCOUNT_OBJECT__duo]-(a)",
+                "WHERE (o.data.name = $org OR o.entity_type = $org)",
+                "RETURN o, d, a"
+              ]
+            },
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "type": "string",
+                  "default": "okta__okta_org",
+                  "description": "The Okta org's name (okta__okta_org.name, its natural key), from ?org= on the page, matched exactly. Absent, the default is the sentinel 'okta__okta_org' (the org type's own slug), which every org's entity_type equals, so every org matches: the one org on a single-org grid. The sentinel stands in for the optional filter Gryphon cannot yet say directly (tap#360); the org model refuses that name, so the sentinel is never an org's name."
+                }
+              },
+              "additionalProperties": false
+            },
+            "max_limit": 1000
+          }
+        },
+        {
+          "entity": {
             "entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb6a7b48100",
             "entity_type": "layout",
             "name": "okta org layout",
@@ -644,7 +679,7 @@
           },
           "node": {
             "name": "okta org layout",
-            "description": "Draws one Okta org at the centre of a 3x3 grid of family boxes (Federation, Authenticators, Network above; Groups left and Applications right; Administration, Policies below), each policy's rules nested inside it. Names no entity id: reusable for any org, and a node whose type no family names is drawn in an Other box and reported.",
+            "description": "Draws one Okta org as the outer box of the picture: inside it, a 3x3 grid of family boxes (Federation, Authenticators, Network at the top; Groups left and Applications right, the centre left open for the assignments to cross; Administration, Policies at the bottom), each policy's rules nested inside it. Another system's node an edge reaches (the Duo application the org requests a second factor from, inside its Duo account) is drawn in a column outside the org. Every drawn edge is labelled with its humanized type. Names no entity id: reusable for any org, and an okta node whose type no family names is drawn in an Other box and reported.",
             "definition": {
               "js_file": "tap_plugin/okta/static/okta/js/projections/okta-org.js",
               "arrangements": []
@@ -680,7 +715,7 @@
           },
           "node": {
             "name": "okta org projection",
-            "description": "The /okta graph: one elevation, one layout module (okta-org.js). Icon-badge node style; placement fixed (lock_nodes); opens fitted.",
+            "description": "The /okta graph: one elevation, one layout module (okta-org.js). Icon-badge node style, edge types shown as labels by the layout; placement fixed (lock_nodes); opens fitted.",
             "definition": {
               "node_style": {
                 "mode": "icon-badge"
@@ -706,11 +741,21 @@
           "node": {
             "name": "Okta org",
             "slug": "okta-org-graph",
-            "description": "The org's configuration in one picture: which groups are assigned which applications, which authentication policy each application is bound to and the authenticators its rules require, inbound federation, and who holds which admin role. Users, devices and API tokens are in the tables below.",
+            "description": "The org's configuration in one picture, the org as the outer box: which groups are assigned which applications, which authentication policy each application is bound to and the authenticators its rules require, inbound federation, and who holds which admin role, every line labelled with what it is. Outside the org, the Duo account whose application the org sends users to for a second factor; click it to open that account's /duo page. Users, devices and API tokens are in the tables below.",
             "view": "tap_viz/panels/graph_panel.html",
             "config": {
               "height": "100%",
-              "hide_header": true
+              "hide_header": true,
+              "nav_rules": [
+                {
+                  "entity_type": "duo__duo_account",
+                  "url_template": "/duo?account={data.name}"
+                },
+                {
+                  "entity_type": "duo__duo_application",
+                  "url_template": "/duo"
+                }
+              ]
             }
           }
         },
@@ -2742,6 +2787,20 @@
           "edge": {
             "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
             "to_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbc5bb18866c",
+            "edge_type": "USES_SEARCH",
+            "properties": {}
+          }
+        },
+        {
+          "entity": {
+            "entity_id": "01a0d48c-19ba-7158-91e7-c444ba147df0",
+            "entity_type": "edge",
+            "name": "okta org-graph panel USES_SEARCH scene-requests-second-factor",
+            "dimensions": {}
+          },
+          "edge": {
+            "from_entity_id": "01a0cc72-bb1c-71a6-9bbe-cbb3618d4d18",
+            "to_entity_id": "01a0d48c-19ba-7158-91e7-c4436ba3185a",
             "edge_type": "USES_SEARCH",
             "properties": {}
           }
