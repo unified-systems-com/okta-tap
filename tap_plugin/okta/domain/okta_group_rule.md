@@ -53,4 +53,3 @@ Documented path: `GET /api/v1/groups/rules` (okta.groups.read).
 - `okta_id` — Okta's own object id (for example 00u1a2b3c4). Blank until observed: a design node has none.
 - `status` — Okta's rule status. INVALID means the rule references something that no longer exists.
 - `expression` — conditions.expression.value: the Okta Expression Language condition.
-- `tags` — TAP's tag map.

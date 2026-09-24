@@ -109,7 +109,7 @@ An Okta org: one okta.com, okta-gov.com or custom-domain tenant. The node every 
 `ENTITY_ICON = "okta-org"`, no default dimensions, fields `name` (required; the value `okta__okta_org`
 is refused because it is the /okta page's every-org sentinel), `org_domain`, `okta_id`,
 `service_offering` (`commercial`, `okta_for_government_moderate`, `okta_for_government_high`,
-`okta_for_dod_il4`, or blank = not stated), `tags`. `NATURAL_KEY = ("name",)`; revisited
+`okta_for_dod_il4`, or blank = not stated). `NATURAL_KEY = ("name",)`; revisited
 to `okta_id` with `req-okta-collector`. Article: `tap_plugin/okta/domain/okta_org.md`.
 
 #### Acceptance Criteria
@@ -141,8 +141,8 @@ One module per type under `tap_plugin/okta/models/`, registered in `tap-plugin.t
 policy_name, name`), `okta_network_zone`, `okta_trusted_origin`, `okta_admin_role`, `okta_resource_set`,
 `okta_role_assignment`, `okta_api_token`, `okta_device` (key `org_name, okta_id`: only ever observed),
 `okta_log_stream`; the rest key on `org_name, name`. Every type carries `org_name`, `okta_id` (blank until
-observed, except the device) and `tags`; the vendor facts each carries are its article's
-Fields section. **No type has a free-form `configuration` field**, the org included: the records Okta keeps
+observed, except the device); the vendor facts each carries are its article's
+Fields section. **No type has a free-form `configuration` or `tags` field**, the org included (`tags` was removed in migration `0004` because nothing read it: a shapeless map is the same unreviewed-blob risk as `configuration`): the records Okta keeps
 can carry secret material and personal data (an application's client secret, an identity provider's signing
 keys, a user's profile), and nothing here collects them, so only promoted columns are stored and a record
 cannot be passed through whole. Closed vocabularies (`status`, `sign_on_mode`, `policy_type`, `role_type`, ...) are JSON

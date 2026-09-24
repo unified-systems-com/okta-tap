@@ -62,4 +62,3 @@ Documented path: `GET /api/v1/apps` (okta.apps.read); assignments by `GET /api/v
 - `client_id` — For OIDC and service apps: the OAuth client_id (Okta uses the app id).
 - `redirect_uris` — OIDC redirect URIs or the SAML ACS URL(s). A field, not a node: nothing but the app points at a reply URI.
 - `grant_types` — OIDC/OAuth grant types the client may use.
-- `tags` — TAP's tag map.

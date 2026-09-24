@@ -56,7 +56,6 @@ class OktaUser(BaseModel):
         "last_login_at": {"type": ["string", "null"]},
         "password_changed_at": {"type": ["string", "null"]},
         "status_changed_at": {"type": ["string", "null"]},
-        "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
         "org_name": {"validation": "jsonschema", "schema": {"type": "string", "minLength": 1}},
@@ -71,7 +70,6 @@ class OktaUser(BaseModel):
         "last_login_at": {"validation": "jsonschema", "schema": {"type": ["string", "null"]}},
         "password_changed_at": {"validation": "jsonschema", "schema": {"type": ["string", "null"]}},
         "status_changed_at": {"validation": "jsonschema", "schema": {"type": ["string", "null"]}},
-        "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "login"]
 
@@ -104,8 +102,6 @@ class OktaUser(BaseModel):
     password_changed_at = models.DateTimeField(null=True, blank=True)
     #: Okta's statusChanged: when the account entered its current status.
     status_changed_at = models.DateTimeField(null=True, blank=True)
-    #: TAP's tag map.
-    tags = models.JSONField(default=dict, blank=True)
 
     class Meta(BaseModel.Meta):
         db_table = "okta__okta_user"

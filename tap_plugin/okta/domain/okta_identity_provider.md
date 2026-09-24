@@ -58,4 +58,3 @@ Documented path: `GET /api/v1/idps` (okta.idps.read).
 - `provisioning_action` — policy.provisioning.action: AUTO means Just-In-Time provisioning creates users from assertions.
 - `account_link_action` — policy.accountLink.action: AUTO links an assertion to an EXISTING user. With AUTO an IdP can sign in as that user.
 - `subject_match_type` — policy.subject.matchType: how the assertion's subject is matched to a user (USERNAME, EMAIL, USERNAME_OR_EMAIL, CUSTOM_ATTRIBUTE).
-- `tags` — TAP's tag map.

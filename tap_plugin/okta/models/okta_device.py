@@ -42,7 +42,6 @@ class OktaDevice(BaseModel):
         "status": {"type": "string", "enum": ["", "ACTIVE", "DEACTIVATED", "SUSPENDED", "UNSUSPENDED"]},
         "managed": {"type": ["boolean", "null"]},
         "secure_hardware_present": {"type": ["boolean", "null"]},
-        "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
         "org_name": {"validation": "jsonschema", "schema": {"type": "string", "minLength": 1}},
@@ -53,7 +52,6 @@ class OktaDevice(BaseModel):
         "status": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "ACTIVE", "DEACTIVATED", "SUSPENDED", "UNSUSPENDED"]}},
         "managed": {"validation": "jsonschema", "schema": {"type": ["boolean", "null"]}},
         "secure_hardware_present": {"validation": "jsonschema", "schema": {"type": ["boolean", "null"]}},
-        "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "okta_id"]
 
@@ -77,8 +75,6 @@ class OktaDevice(BaseModel):
     managed = models.BooleanField(null=True, blank=True)
     #: profile.secureHardwarePresent (TPM / Secure Enclave). Null means not observed.
     secure_hardware_present = models.BooleanField(null=True, blank=True)
-    #: TAP's tag map.
-    tags = models.JSONField(default=dict, blank=True)
 
     class Meta(BaseModel.Meta):
         db_table = "okta__okta_device"

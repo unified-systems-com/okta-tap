@@ -56,4 +56,3 @@ Documented path: `GET /api/v1/devices` (okta.devices.read).
 - `status` — Okta's device status.
 - `managed` — Whether a device-management integration reports the device managed. Null means not observed.
 - `secure_hardware_present` — profile.secureHardwarePresent (TPM / Secure Enclave). Null means not observed.
-- `tags` — TAP's tag map.

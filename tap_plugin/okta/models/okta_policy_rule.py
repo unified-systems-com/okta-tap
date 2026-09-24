@@ -46,7 +46,6 @@ class OktaPolicyRule(BaseModel):
         "access": {"type": "string", "enum": ["", "ALLOW", "DENY"]},
         "factor_mode": {"type": "string", "enum": ["", "1FA", "2FA"]},
         "reauthenticate_in": {"type": "string"},
-        "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
         "org_name": {"validation": "jsonschema", "schema": {"type": "string", "minLength": 1}},
@@ -59,7 +58,6 @@ class OktaPolicyRule(BaseModel):
         "access": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "ALLOW", "DENY"]}},
         "factor_mode": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "1FA", "2FA"]}},
         "reauthenticate_in": {"validation": "jsonschema", "schema": {"type": "string"}},
-        "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "policy_type", "policy_name", "name"]
 
@@ -90,8 +88,6 @@ class OktaPolicyRule(BaseModel):
     factor_mode = models.CharField(max_length=255, blank=True, default="")
     #: ISO-8601 duration before the user must re-verify (PT12H); blank when not observed.
     reauthenticate_in = models.CharField(max_length=255, blank=True, default="")
-    #: TAP's tag map.
-    tags = models.JSONField(default=dict, blank=True)
 
     class Meta(BaseModel.Meta):
         db_table = "okta__okta_policy_rule"

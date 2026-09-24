@@ -64,4 +64,3 @@ Documented path: `GET /api/v1/users` (okta.users.read). The API's `lastLogin` is
 - `last_login_at` — Okta's lastLogin. Null means not observed OR never signed in.
 - `password_changed_at` — Okta's passwordChanged.
 - `status_changed_at` — Okta's statusChanged: when the account entered its current status.
-- `tags` — TAP's tag map.

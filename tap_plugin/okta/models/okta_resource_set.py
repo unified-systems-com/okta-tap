@@ -38,14 +38,12 @@ class OktaResourceSet(BaseModel):
         "name": {"type": "string", "minLength": 1},
         "okta_id": {"type": "string"},
         "description": {"type": "string"},
-        "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
         "org_name": {"validation": "jsonschema", "schema": {"type": "string", "minLength": 1}},
         "name": {"validation": "jsonschema", "schema": {"type": "string", "minLength": 1}},
         "okta_id": {"validation": "jsonschema", "schema": {"type": "string"}},
         "description": {"validation": "jsonschema", "schema": {"type": "string"}},
-        "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "name"]
 
@@ -61,8 +59,6 @@ class OktaResourceSet(BaseModel):
     okta_id = models.CharField(max_length=255, blank=True, default="", db_index=True)
     #: The resource set's description.
     description = models.TextField(blank=True, default="")
-    #: TAP's tag map.
-    tags = models.JSONField(default=dict, blank=True)
 
     class Meta(BaseModel.Meta):
         db_table = "okta__okta_resource_set"

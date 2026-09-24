@@ -46,7 +46,6 @@ class OktaApplication(BaseModel):
         "client_id": {"type": "string"},
         "redirect_uris": {"type": "array", "items": {"type": "string"}},
         "grant_types": {"type": "array", "items": {"type": "string"}},
-        "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
         "org_name": {"validation": "jsonschema", "schema": {"type": "string", "minLength": 1}},
@@ -59,7 +58,6 @@ class OktaApplication(BaseModel):
         "client_id": {"validation": "jsonschema", "schema": {"type": "string"}},
         "redirect_uris": {"validation": "jsonschema", "schema": {"type": "array", "items": {"type": "string"}}},
         "grant_types": {"validation": "jsonschema", "schema": {"type": "array", "items": {"type": "string"}}},
-        "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "label"]
 
@@ -91,8 +89,6 @@ class OktaApplication(BaseModel):
     redirect_uris = models.JSONField(default=list, blank=True)
     #: OIDC/OAuth grant types the client may use.
     grant_types = models.JSONField(default=list, blank=True)
-    #: TAP's tag map.
-    tags = models.JSONField(default=dict, blank=True)
 
     class Meta(BaseModel.Meta):
         db_table = "okta__okta_application"

@@ -40,14 +40,12 @@ class OktaOrg(BaseModel):
         "org_domain": {"type": "string"},
         "okta_id": {"type": "string"},
         "service_offering": {"type": "string", "enum": ["", "commercial", "okta_for_government_moderate", "okta_for_government_high", "okta_for_dod_il4"]},
-        "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
         "name": {"validation": "jsonschema", "schema": {"type": "string", "minLength": 1, "not": {"const": "okta__okta_org"}}},
         "org_domain": {"validation": "jsonschema", "schema": {"type": "string"}},
         "okta_id": {"validation": "jsonschema", "schema": {"type": "string"}},
         "service_offering": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "commercial", "okta_for_government_moderate", "okta_for_government_high", "okta_for_dod_il4"]}},
-        "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["name"]
 
@@ -60,7 +58,6 @@ class OktaOrg(BaseModel):
     #: Moderate), Okta for Government High (FedRAMP High, okta-gov.com cells) or Okta for DoD IL4.
     #: A design can know this; blank means not stated, never 'commercial'.
     service_offering = models.CharField(max_length=64, blank=True, default="")
-    tags = models.JSONField(default=dict, blank=True)
 
     class Meta(BaseModel.Meta):
         db_table = "okta__okta_org"

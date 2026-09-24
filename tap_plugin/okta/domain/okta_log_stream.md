@@ -54,4 +54,3 @@ Documented path: `GET /api/v1/logStreams` (okta.logStreams.read).
 - `stream_type` — Okta's log stream type.
 - `status` — Okta's status.
 - `destination` — Where the stream lands, in the destination's own words: an EventBridge event source (account, region, source name) or a Splunk host.
-- `tags` — TAP's tag map.

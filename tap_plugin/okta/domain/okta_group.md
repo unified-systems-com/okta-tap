@@ -54,4 +54,3 @@ Documented path: `GET /api/v1/groups` (okta.groups.read); members by `GET /api/v
 - `okta_id` — Okta's own object id (for example 00u1a2b3c4). Blank until observed: a design node has none.
 - `group_type` — Okta's group type: mastered in Okta, imported from an application, or built in (Everyone).
 - `description` — profile.description.
-- `tags` — TAP's tag map.

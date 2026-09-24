@@ -43,7 +43,6 @@ class OktaAuthenticator(BaseModel):
         "authenticator_type": {"type": "string"},
         "status": {"type": "string", "enum": ["", "ACTIVE", "INACTIVE"]},
         "phishing_resistant": {"type": ["boolean", "null"]},
-        "tags": {"type": "object"},
     }
     FIELD_VALIDATION_SCHEMA: ClassVar[dict[str, Any]] = {
         "org_name": {"validation": "jsonschema", "schema": {"type": "string", "minLength": 1}},
@@ -53,7 +52,6 @@ class OktaAuthenticator(BaseModel):
         "authenticator_type": {"validation": "jsonschema", "schema": {"type": "string"}},
         "status": {"validation": "jsonschema", "schema": {"type": "string", "enum": ["", "ACTIVE", "INACTIVE"]}},
         "phishing_resistant": {"validation": "jsonschema", "schema": {"type": ["boolean", "null"]}},
-        "tags": {"validation": "jsonschema", "schema": {"type": "object"}},
     }
     CREATE_REQUIRED: ClassVar[list[str]] = ["org_name", "name"]
 
@@ -78,8 +76,6 @@ class OktaAuthenticator(BaseModel):
     #: Whether the authenticator can satisfy a phishing-resistant constraint (FastPass, WebAuthn,
     #: smart card). Null means not observed.
     phishing_resistant = models.BooleanField(null=True, blank=True)
-    #: TAP's tag map.
-    tags = models.JSONField(default=dict, blank=True)
 
     class Meta(BaseModel.Meta):
         db_table = "okta__okta_authenticator"
