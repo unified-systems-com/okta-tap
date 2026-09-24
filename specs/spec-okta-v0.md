@@ -9,7 +9,7 @@
 | Slug | `okta` |
 | Display name | TAP Okta |
 | Description | Okta workforce identity as grid vocabulary: the org and the objects a FedRAMP operator answers for in it (users, groups, applications, authorization servers, identity providers, authenticators, policies, network zones, admin roles, API tokens, devices, log streams), with an org page. |
-| Kind | Leaf plugin: Okta vocabulary. Consumes identity_core's neutral OIDC issuer (vocabulary dependency); consumed by instance plugins that place an Okta org in a design (highbar first). |
+| Kind | Leaf plugin: Okta vocabulary. Consumes identity_core's neutral OIDC issuer and human, and computing_core's neutral host (vocabulary dependencies); consumed by instance plugins that place an Okta org in a design (highbar first). |
 
 **Default dimensions**
 
@@ -85,12 +85,13 @@ edge seeded by an instance's design is *designed* (`dcom: design`).
 | req-okta-corpus | [Corpus Node Types](#corpus-node-types) | Implemented | The seventeen types inside an org, their keys, icons and domain articles |
 | req-okta-edges | [Corpus Edge Types](#corpus-edge-types) | Implemented | Twenty-three edges; open ends and the one substrate target |
 | req-okta-person | [Person Link](#person-link) | Implemented | An Okta user is held by `identity_core__human` (`HELD_BY_HUMAN__identity_core`) |
+| req-okta-host-link | [Host Link](#host-link) | Implemented | `okta__okta_device` declares `REPRESENTS_HOST__computing_core` to `computing_core__host` |
 | req-okta-page-org | [Page: Org](#page-org) | Implemented | `/okta?org=<org name>`: the graph (the org as the outer box, labelled edges, the Duo link both ways), then fifteen tables; observed in a browser 2026-09-24 |
 | req-okta-record | [CI Record and Tests](#ci-record-and-tests) | Implemented | The in-package `ci` boot record and the suite |
 | req-okta-collector | [Collector](#collector) | Backlog | Observe a real Okta org onto the grid |
 | req-okta-backlog-oauth-grants | [OAuth Scopes, Claims And Grants](#oauth-scopes-claims-and-grants) | Backlog | Scopes, claims, authorization-server policies and client grants as first-class |
 | req-okta-backlog-provisioning | [Provisioning And Integrations](#provisioning-and-integrations) | Backlog | SCIM push and import, group push, profile mappings, event and inline hooks |
-| req-okta-backlog-device-assurance | [Device Assurance And Realms](#device-assurance-and-realms) | Backlog | Device assurance policies, posture signals, realms, the neutral device link |
+| req-okta-backlog-device-assurance | [Device Assurance And Realms](#device-assurance-and-realms) | Backlog | Device assurance policies, posture signals, realms |
 | req-okta-nongoals | [Non-goals](#non-goals) | Implemented | Derived capability edges, sessions, System Log events, brands |
 
 ---
@@ -195,7 +196,7 @@ identity_core's own `TRUSTS_ISSUER__identity_core`, whose source side is open fo
 | ACID | Title | Status | Description | Notes |
 | --- | --- | :---: | --- | --- |
 | req-okta-edges-1 | Files Match The Manifest | Implemented | Slug, manifest key and file name agree; every property schema is closed. | `tests/test_okta_corpus.py` |
-| req-okta-edges-2 | Open Ends Explained, Substrate Only | Implemented | An omitted target is explained in the description; the only foreign type named is identity_core's, and identity_core is the only `depends_on`. | |
+| req-okta-edges-2 | Open Ends Explained, Substrate Only | Implemented | An omitted target is explained in the description; the only foreign type an edge file names is identity_core's. The `depends_on` set is identity_core and computing_core, whose `REPRESENTS_HOST` the device declares (`req-okta-host-link`). | `tests/test_okta_corpus.py` |
 | req-okta-edges-3 | Rules Retire With Their Policy | Implemented | `delete_node(policy, cascade="contained")` retires its rules and ends, never follows, their references. | |
 | req-okta-edges-4 | Property Vocabularies Enforced | Implemented | An edge write with an unknown property, or a value outside a property's enum, is refused; a required property is required. | |
 
@@ -217,7 +218,7 @@ wildcard so the substrate never depends on this plugin.
 `OktaUser.OUTBOUND_EDGES` declares `{"nodes": [{"type": "identity_core__human"}], "edges": [{"type":
 "HELD_BY_HUMAN__identity_core"}]}`. Under the permission union (`req-grid-edge-constraints-3`) this adds a
 permission and constrains nothing else: the okta edge files still permit the user's own edges.
-`identity_core` is already the plugin's one `depends_on` (a vocabulary dependency); the `ci` record pins
+`identity_core` is a `depends_on` (a vocabulary dependency, beside computing_core for `req-okta-host-link`); the `ci` record pins
 it at `53da388b6f47590090ef3bdc8d98731acff4c8e2`, the commit of identity_core's `v0.1.3` tag, the first
 release carrying the human, and `depends_on` declares that release as the floor (`min_version = "0.1.3"`). This retired the corpus's own
 `IDENTIFIES_PERSON__okta` (user → open target), which recorded the same relationship while no substrate
@@ -232,6 +233,37 @@ identity: the edge is drawn by whoever knows the match and records how in `match
 | req-okta-person-1 | Declared On The User | Implemented | `OktaUser` declares `HELD_BY_HUMAN__identity_core` to `identity_core__human`; `identity_core` is in `depends_on` with `min_version = "0.1.3"`; `IDENTIFIES_PERSON__okta` is no longer shipped. | `test_person_link_is_declared` |
 | req-okta-person-2 | Written Through The Service Layer | Implemented | An Okta user writes the edge to a human with `matched_on`; an unknown property is refused (on a fresh pair). | `test_user_is_held_by_a_human`, `test_unknown_property_is_refused` |
 | req-okta-person-3 | Shared Account Recorded | Implemented | One Okta user may be held by two humans; both edges stand. | `test_shared_account_is_recorded` |
+
+---
+
+### Host Link
+----
+RID: `req-okta-host-link`
+
+Status: `Implemented`
+
+An Okta device is Okta's record of a device registered through Okta Verify, not the machine itself. The machine is `computing_core__host`, a neutral substrate node
+keyed on an operator-assigned asset tag, so the same laptop's Okta, Duo, Teleport, MDM and EDR records
+converge on one node, and that host reaches the person it is issued to with computing_core's
+`ASSIGNED_TO_HUMAN`. The link is computing_core's `REPRESENTS_HOST__computing_core`, whose source is
+wildcard so the substrate never depends on this plugin (the pattern of `HELD_BY_HUMAN__identity_core`).
+
+#### Implementation
+
+`OktaDevice.OUTBOUND_EDGES` declares `{"nodes": [{"type": "computing_core__host"}], "edges": [{"type":
+"REPRESENTS_HOST__computing_core"}]}`. Under the permission union (`req-grid-edge-constraints-3`) this adds a
+permission and constrains nothing else. `computing_core` joins `depends_on` as a vocabulary dependency (no
+Python import); the `ci` record pins it at `daa040dbfbe11a390c02d22c7e4947b39face4b7`, the tap-plugin-computing-core commit that adds
+`host` and the edge. No tagged release carries them yet, so no `min_version` floor is declared; the floor
+lands when computing_core is released. The edge is drawn by whoever knows the match and records how in
+`matched_on` (a serial number, an asset tag, an operator seed); nothing joins on a hostname.
+
+#### Acceptance Criteria
+
+| ACID | Title | Status | Description | Notes |
+| --- | --- | :---: | --- | --- |
+| req-okta-host-link-1 | Declared On The Device Record | Implemented | `OktaDevice` declares `REPRESENTS_HOST__computing_core` to `computing_core__host`; `computing_core` is in `depends_on`; the record's own edges are still accepted. | `tests/test_okta_host.py::test_host_link_is_declared`, `::test_record_keeps_its_own_edges` |
+| req-okta-host-link-2 | Written Through The Service Layer | Implemented | The record writes the edge to a host with `matched_on`; an unknown property is refused (on a fresh pair). | `tests/test_okta_host.py::test_record_represents_a_host`, `::test_unknown_property_is_refused` |
 
 ---
 
@@ -419,8 +451,8 @@ RID: `req-okta-backlog-device-assurance`
 
 Status: `Backlog`
 
-Device assurance policies and the rules that require them, Okta Verify posture signals, realms, and the
-link from `okta__okta_device` to a neutral device type.
+Device assurance policies and the rules that require them, Okta Verify posture signals and realms. (The
+link from `okta__okta_device` to a neutral device type is built: `req-okta-host-link`.)
 
 #### Acceptance Criteria
 

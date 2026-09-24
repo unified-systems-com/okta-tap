@@ -25,6 +25,12 @@ class OktaDevice(BaseModel):
     DEFAULT_DIMENSIONS: ClassVar[dict[str, str]] = {}
     # Only a collector creates devices, and it always has the id.
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'okta_id')
+    # The neutral machine behind the record (req-okta-host-link). Under the permission union
+    # (spec-grid-edge.md, req-grid-edge-constraints-3) this adds a permission and constrains nothing
+    # else. It names the foreign edge here because computing_core's edge leaves its source open.
+    OUTBOUND_EDGES: ClassVar[list[dict[str, Any]]] = [
+        {"nodes": [{"type": "computing_core__host"}], "edges": [{"type": "REPRESENTS_HOST__computing_core"}]},
+    ]
     DEFAULT_DISPLAY: ClassVar[dict[str, Any]] = {
         "tap_viz": {
             "shape": "round-rectangle",
