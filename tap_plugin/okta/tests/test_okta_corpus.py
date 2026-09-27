@@ -182,7 +182,8 @@ def test_open_ends_are_explained() -> None:
 
 
 def test_foreign_types_are_substrate_only() -> None:
-    """req-okta-edges-2: the only foreign type named is identity_core's (a declared vocabulary dependency)."""
+    """req-okta-edges-2: the only foreign type an edge file names is identity_core's; the declared vocabulary
+    dependencies are identity_core and computing_core (whose REPRESENTS_HOST okta_device declares)."""
     foreign = set()
     for rel in MANIFEST["edges"].values():
         data = json.loads((PKG / rel).read_text())
@@ -190,7 +191,7 @@ def test_foreign_types_are_substrate_only() -> None:
             if not t.startswith("okta__"):
                 foreign.add(t)
     assert foreign == {"identity_core__oidc_issuer"}
-    assert [d["slug"] for d in MANIFEST["depends_on"]] == ["identity_core"]
+    assert [d["slug"] for d in MANIFEST["depends_on"]] == ["identity_core", "computing_core"]
 
 
 @pytest.mark.django_db

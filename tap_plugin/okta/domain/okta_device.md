@@ -23,11 +23,12 @@ Natural key: `org_name`, `okta_id`. Only a collector creates devices, and it alw
 ## Boundaries
 
 - No free-form `configuration` field: the records Okta keeps for this object can carry secret material or personal data (a client secret, a signing key, a user's profile), so only promoted columns are stored.
-- Device assurance policies and posture signals are Backlog (`req-okta-backlog-device-assurance`); the neutral device (computing_core) is not linked in v1.
+- Device assurance policies and posture signals are Backlog (`req-okta-backlog-device-assurance`).
+- Not the machine. The neutral machine is `computing_core__host`; this record points at it with `REPRESENTS_HOST__computing_core` (declared in `OUTBOUND_EDGES`, `req-okta-host-link`), drawn by whoever knows the match, never inferred from `display_name`.
 
 ## Neutrality
 
-Vendor-specific record of what is really a neutral endpoint; the link to a neutral device type is a later edge.
+Vendor-specific record of a neutral machine; it converges on `computing_core__host` through `REPRESENTS_HOST__computing_core`.
 
 ## Observability
 
