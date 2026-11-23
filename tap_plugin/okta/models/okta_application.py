@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -27,6 +28,8 @@ class OktaApplication(BaseModel):
     # label is what an operator and a design name; Okta does not require it unique, so the key is
     # revisited to (org_name, okta_id) when the collector lands.
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'label')
+    # No event time: no time field is stored; redirect_uris and grant_types are lists of text, not times.
+    EVENT_TIME = NO_EVENT_TIME
     DEFAULT_DISPLAY: ClassVar[dict[str, Any]] = {
         "tap_viz": {
             "shape": "round-rectangle",

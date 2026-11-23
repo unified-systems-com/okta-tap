@@ -38,5 +38,10 @@
         "description": "When the factor was last used to verify (ISO-8601)."
       }
     }
+  },
+  "event_time": {
+    "shape": "interval",
+    "start": "created_at",
+    "kind": "created"
   }
 }

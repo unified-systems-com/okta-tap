@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import Interval
 from tap_grid.models import BaseModel
 
 
@@ -28,6 +29,9 @@ class OktaUser(BaseModel):
     # login is unique within an org and is what a design names; the key is revisited to (org_name,
     # okta_id) when the collector makes okta_id observable, since a login can be renamed.
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'login')
+    # A long-lived account from Okta's `created`; Okta states no end (last_login_at and
+    # status_changed_at stay typed fields).
+    EVENT_TIME = Interval("created_at", "created")
     # The person behind the account (req-okta-person). Under the permission union
     # (spec-grid-edge.md, req-grid-edge-constraints-3) this adds a permission and constrains nothing
     # else: the okta edge files still permit the user's own okta edges (BELONGS_TO_ORG, MEMBER_OF_GROUP,

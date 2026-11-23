@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -27,6 +28,8 @@ class OktaAuthorizationServer(BaseModel):
     # Server names are unique within an org (the org server is named for the org); revisited to
     # (org_name, okta_id).
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'name')
+    # No event time: no time field is stored; audiences, scopes and claims are lists, not times.
+    EVENT_TIME = NO_EVENT_TIME
     DEFAULT_DISPLAY: ClassVar[dict[str, Any]] = {
         "tap_viz": {
             "shape": "round-rectangle",

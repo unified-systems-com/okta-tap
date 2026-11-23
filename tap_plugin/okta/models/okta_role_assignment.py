@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -28,6 +29,8 @@ class OktaRoleAssignment(BaseModel):
     # example 'Okta Admins: Super Administrator'); revisited to (org_name, okta_id) when the
     # collector lands.
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'name')
+    # No event time: no time field is stored; Okta's assignment created/lastUpdated are not modelled.
+    EVENT_TIME = NO_EVENT_TIME
     DEFAULT_DISPLAY: ClassVar[dict[str, Any]] = {
         "tap_viz": {
             "shape": "round-rectangle",

@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -25,6 +26,8 @@ class OktaDevice(BaseModel):
     DEFAULT_DIMENSIONS: ClassVar[dict[str, str]] = {}
     # Only a collector creates devices, and it always has the id.
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'okta_id')
+    # No event time: no time field is stored; Okta's device created/lastUpdated are not modelled.
+    EVENT_TIME = NO_EVENT_TIME
     DEFAULT_DISPLAY: ClassVar[dict[str, Any]] = {
         "tap_viz": {
             "shape": "round-rectangle",

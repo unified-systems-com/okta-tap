@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -27,6 +28,8 @@ class OktaPolicyRule(BaseModel):
     # Rule names are unique within a policy, so the key carries the policy's own key alongside;
     # revisited to (org_name, okta_id).
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'policy_type', 'policy_name', 'name')
+    # No event time: no time field is stored; reauthenticate_in is a duration, not a time.
+    EVENT_TIME = NO_EVENT_TIME
     DEFAULT_DISPLAY: ClassVar[dict[str, Any]] = {
         "tap_viz": {
             "shape": "round-rectangle",

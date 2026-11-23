@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -26,6 +27,8 @@ class OktaPolicy(BaseModel):
     DEFAULT_DIMENSIONS: ClassVar[dict[str, str]] = {}
     # Policy names are unique per type within an org; revisited to (org_name, okta_id).
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'policy_type', 'name')
+    # No event time: no time field is stored; Okta's policy created/lastUpdated are not modelled.
+    EVENT_TIME = NO_EVENT_TIME
     OUTBOUND_EDGES: ClassVar[list[dict[str, Any]]] = [
         {"nodes": [{"type": "okta__okta_org"}], "edges": [{"type": "BELONGS_TO_ORG__okta"}]},
         {"nodes": [{"type": "okta__okta_policy_rule"}], "edges": [{"type": "EVALUATES_RULE__okta"}]},

@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -26,6 +27,8 @@ class OktaOrg(BaseModel):
     # A design-phase node has no observed identifier; its name is the only fact it carries.
     # Revisit when the collector makes org_domain observable (req-okta-collector).
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ("name",)
+    # No event time: the org row carries identifiers and the service offering, no time Okta states for it.
+    EVENT_TIME = NO_EVENT_TIME
     DEFAULT_DISPLAY: ClassVar[dict[str, Any]] = {
         "tap_viz": {
             "shape": "round-rectangle",

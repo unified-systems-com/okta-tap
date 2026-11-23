@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -26,6 +27,8 @@ class OktaAdminRole(BaseModel):
     # Standard roles are named by Okta and custom role labels are unique within an org; revisited to
     # (org_name, okta_id) for custom roles.
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'name')
+    # No event time: no time field is stored; permissions is a list of permission names.
+    EVENT_TIME = NO_EVENT_TIME
     DEFAULT_DISPLAY: ClassVar[dict[str, Any]] = {
         "tap_viz": {
             "shape": "round-rectangle",
