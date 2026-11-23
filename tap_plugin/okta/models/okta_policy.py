@@ -21,14 +21,14 @@ class OktaPolicy(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_policy"
     ENTITY_NAME: ClassVar[str] = "Okta Policy"
     ENTITY_DESCRIPTION: ClassVar[str] = "A policy in an Okta org: a global session, authentication (app sign-on), password, authenticator enrollment, IdP routing or other policy, evaluated through its ordered rules."
+    # No event time: no time field is stored; Okta's policy created/lastUpdated are not modelled.
+    EVENT_TIME = NO_EVENT_TIME
     ENTITY_ICON: ClassVar[str] = "okta-policy"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.
     DEFAULT_DIMENSIONS: ClassVar[dict[str, str]] = {}
     # Policy names are unique per type within an org; revisited to (org_name, okta_id).
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'policy_type', 'name')
-    # No event time: no time field is stored; Okta's policy created/lastUpdated are not modelled.
-    EVENT_TIME = NO_EVENT_TIME
     OUTBOUND_EDGES: ClassVar[list[dict[str, Any]]] = [
         {"nodes": [{"type": "okta__okta_org"}], "edges": [{"type": "BELONGS_TO_ORG__okta"}]},
         {"nodes": [{"type": "okta__okta_policy_rule"}], "edges": [{"type": "EVALUATES_RULE__okta"}]},

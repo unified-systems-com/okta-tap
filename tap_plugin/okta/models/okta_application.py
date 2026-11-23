@@ -21,6 +21,8 @@ class OktaApplication(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_application"
     ENTITY_NAME: ClassVar[str] = "Okta Application"
     ENTITY_DESCRIPTION: ClassVar[str] = "An application integration in an Okta org: a SAML, OIDC, WS-Fed, SWA or bookmark app that users sign in to through Okta, or an API service app."
+    # No event time: no time field is stored; redirect_uris and grant_types are lists of text, not times.
+    EVENT_TIME = NO_EVENT_TIME
     ENTITY_ICON: ClassVar[str] = "okta-application"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.
@@ -28,8 +30,6 @@ class OktaApplication(BaseModel):
     # label is what an operator and a design name; Okta does not require it unique, so the key is
     # revisited to (org_name, okta_id) when the collector lands.
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'label')
-    # No event time: no time field is stored; redirect_uris and grant_types are lists of text, not times.
-    EVENT_TIME = NO_EVENT_TIME
     DEFAULT_DISPLAY: ClassVar[dict[str, Any]] = {
         "tap_viz": {
             "shape": "round-rectangle",

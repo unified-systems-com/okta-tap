@@ -19,14 +19,14 @@ class OktaNetworkZone(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_network_zone"
     ENTITY_NAME: ClassVar[str] = "Okta Network Zone"
     ENTITY_DESCRIPTION: ClassVar[str] = "A network zone in an Okta org: a named set of IP ranges, or a dynamic zone of locations, ASNs and anonymizer categories, used in policy conditions or as a blocklist."
+    # No event time: no time field is stored; gateways and proxies are lists of addresses, not times.
+    EVENT_TIME = NO_EVENT_TIME
     ENTITY_ICON: ClassVar[str] = "okta-network-zone"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.
     DEFAULT_DIMENSIONS: ClassVar[dict[str, str]] = {}
     # Zone names are unique within an org; revisited to (org_name, okta_id).
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'name')
-    # No event time: no time field is stored; gateways and proxies are lists of addresses, not times.
-    EVENT_TIME = NO_EVENT_TIME
     DEFAULT_DISPLAY: ClassVar[dict[str, Any]] = {
         "tap_viz": {
             "shape": "round-rectangle",

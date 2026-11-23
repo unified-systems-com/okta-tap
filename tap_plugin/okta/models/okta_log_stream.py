@@ -20,14 +20,14 @@ class OktaLogStream(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_log_stream"
     ENTITY_NAME: ClassVar[str] = "Okta Log Stream"
     ENTITY_DESCRIPTION: ClassVar[str] = "A log stream in an Okta org: the System Log delivered continuously to AWS EventBridge or Splunk Cloud."
+    # No event time: no time field is stored; Okta's log stream created/lastUpdated are not modelled.
+    EVENT_TIME = NO_EVENT_TIME
     ENTITY_ICON: ClassVar[str] = "okta-log-stream"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.
     DEFAULT_DIMENSIONS: ClassVar[dict[str, str]] = {}
     # Names are unique within an org; revisited to (org_name, okta_id).
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'name')
-    # No event time: no time field is stored; Okta's log stream created/lastUpdated are not modelled.
-    EVENT_TIME = NO_EVENT_TIME
     DEFAULT_DISPLAY: ClassVar[dict[str, Any]] = {
         "tap_viz": {
             "shape": "round-rectangle",

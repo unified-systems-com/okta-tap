@@ -22,14 +22,14 @@ class OktaAuthenticator(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_authenticator"
     ENTITY_NAME: ClassVar[str] = "Okta Authenticator"
     ENTITY_DESCRIPTION: ClassVar[str] = "An authenticator configured in an Okta org: Okta Verify, a security key (WebAuthn/FIDO2), password, email, phone, a smart card, or an external verifier such as Duo."
+    # No event time: no time field is stored; Okta's authenticator created/lastUpdated are not modelled.
+    EVENT_TIME = NO_EVENT_TIME
     ENTITY_ICON: ClassVar[str] = "okta-authenticator"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.
     DEFAULT_DIMENSIONS: ClassVar[dict[str, str]] = {}
     # Authenticator names are unique within an org; revisited to (org_name, okta_id).
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'name')
-    # No event time: no time field is stored; Okta's authenticator created/lastUpdated are not modelled.
-    EVENT_TIME = NO_EVENT_TIME
     DEFAULT_DISPLAY: ClassVar[dict[str, Any]] = {
         "tap_viz": {
             "shape": "round-rectangle",

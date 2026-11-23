@@ -22,6 +22,9 @@ class OktaUser(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_user"
     ENTITY_NAME: ClassVar[str] = "Okta User"
     ENTITY_DESCRIPTION: ClassVar[str] = "A user account in an Okta org: one login, its lifecycle status and when it last signed in."
+    # A long-lived account from Okta's `created`; Okta states no end (last_login_at and
+    # status_changed_at stay typed fields).
+    EVENT_TIME = Interval("created_at", "created")
     ENTITY_ICON: ClassVar[str] = "okta-user"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.
@@ -29,9 +32,6 @@ class OktaUser(BaseModel):
     # login is unique within an org and is what a design names; the key is revisited to (org_name,
     # okta_id) when the collector makes okta_id observable, since a login can be renamed.
     NATURAL_KEY: ClassVar[tuple[str, ...]] = ('org_name', 'login')
-    # A long-lived account from Okta's `created`; Okta states no end (last_login_at and
-    # status_changed_at stay typed fields).
-    EVENT_TIME = Interval("created_at", "created")
     # The person behind the account (req-okta-person). Under the permission union
     # (spec-grid-edge.md, req-grid-edge-constraints-3) this adds a permission and constrains nothing
     # else: the okta edge files still permit the user's own okta edges (BELONGS_TO_ORG, MEMBER_OF_GROUP,
