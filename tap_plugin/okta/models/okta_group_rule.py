@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -19,6 +20,8 @@ class OktaGroupRule(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_group_rule"
     ENTITY_NAME: ClassVar[str] = "Okta Group Rule"
     ENTITY_DESCRIPTION: ClassVar[str] = "A group rule in an Okta org: an Okta Expression Language condition that places matching users into groups automatically."
+    # No event time: no time field is stored; Okta's rule created/lastUpdated are not modelled.
+    EVENT_TIME = NO_EVENT_TIME
     ENTITY_ICON: ClassVar[str] = "okta-group-rule"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.

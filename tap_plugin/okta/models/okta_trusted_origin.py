@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -18,6 +19,8 @@ class OktaTrustedOrigin(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_trusted_origin"
     ENTITY_NAME: ClassVar[str] = "Okta Trusted Origin"
     ENTITY_DESCRIPTION: ClassVar[str] = "A trusted origin in an Okta org: a web origin Okta allows for cross-origin requests, redirects after sign-in, or iframe embedding."
+    # No event time: no time field is stored; scopes is a list of scope objects, not times.
+    EVENT_TIME = NO_EVENT_TIME
     ENTITY_ICON: ClassVar[str] = "okta-trusted-origin"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.

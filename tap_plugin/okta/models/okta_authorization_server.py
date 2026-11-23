@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -20,6 +21,8 @@ class OktaAuthorizationServer(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_authorization_server"
     ENTITY_NAME: ClassVar[str] = "Okta Authorization Server"
     ENTITY_DESCRIPTION: ClassVar[str] = "An OAuth 2.0 / OIDC authorization server in an Okta org: the org authorization server, the default custom server, or a custom server, each an OIDC issuer."
+    # No event time: no time field is stored; audiences, scopes and claims are lists, not times.
+    EVENT_TIME = NO_EVENT_TIME
     ENTITY_ICON: ClassVar[str] = "okta-authorization-server"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.

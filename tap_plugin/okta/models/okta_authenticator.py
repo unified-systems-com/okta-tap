@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -21,6 +22,8 @@ class OktaAuthenticator(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_authenticator"
     ENTITY_NAME: ClassVar[str] = "Okta Authenticator"
     ENTITY_DESCRIPTION: ClassVar[str] = "An authenticator configured in an Okta org: Okta Verify, a security key (WebAuthn/FIDO2), password, email, phone, a smart card, or an external verifier such as Duo."
+    # No event time: no time field is stored; Okta's authenticator created/lastUpdated are not modelled.
+    EVENT_TIME = NO_EVENT_TIME
     ENTITY_ICON: ClassVar[str] = "okta-authenticator"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.

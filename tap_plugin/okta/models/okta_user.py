@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import Interval
 from tap_grid.models import BaseModel
 
 
@@ -21,6 +22,9 @@ class OktaUser(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_user"
     ENTITY_NAME: ClassVar[str] = "Okta User"
     ENTITY_DESCRIPTION: ClassVar[str] = "A user account in an Okta org: one login, its lifecycle status and when it last signed in."
+    # A long-lived account from Okta's `created`; Okta states no end (last_login_at and
+    # status_changed_at stay typed fields).
+    EVENT_TIME = Interval("created_at", "created")
     ENTITY_ICON: ClassVar[str] = "okta-user"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.

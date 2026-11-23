@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -19,6 +20,8 @@ class OktaDevice(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_device"
     ENTITY_NAME: ClassVar[str] = "Okta Device"
     ENTITY_DESCRIPTION: ClassVar[str] = "A device registered in an Okta org through Okta Verify: its platform, status and whether it is managed."
+    # No event time: no time field is stored; Okta's device created/lastUpdated are not modelled.
+    EVENT_TIME = NO_EVENT_TIME
     ENTITY_ICON: ClassVar[str] = "okta-device"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.

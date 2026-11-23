@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -20,6 +21,8 @@ class OktaPolicyRule(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_policy_rule"
     ENTITY_NAME: ClassVar[str] = "Okta Policy Rule"
     ENTITY_DESCRIPTION: ClassVar[str] = "A rule in an Okta policy: its conditions (people, network zones) and its action (allow or deny, the factors it requires, re-authentication frequency)."
+    # No event time: no time field is stored; reauthenticate_in is a duration, not a time.
+    EVENT_TIME = NO_EVENT_TIME
     ENTITY_ICON: ClassVar[str] = "okta-policy-rule"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.

@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import NO_EVENT_TIME
 from tap_grid.models import BaseModel
 
 
@@ -20,6 +21,8 @@ class OktaRoleAssignment(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_role_assignment"
     ENTITY_NAME: ClassVar[str] = "Okta Role Assignment"
     ENTITY_DESCRIPTION: ClassVar[str] = "An administrator role assignment in an Okta org: one principal (user, group or service app) holding one admin role, over the whole org or a scoped set of resources."
+    # No event time: no time field is stored; Okta's assignment created/lastUpdated are not modelled.
+    EVENT_TIME = NO_EVENT_TIME
     ENTITY_ICON: ClassVar[str] = "okta-role-assignment"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.

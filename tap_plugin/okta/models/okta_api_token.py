@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from django.db import models
 
+from tap_grid.event_time import Interval
 from tap_grid.models import BaseModel
 
 
@@ -18,6 +19,9 @@ class OktaApiToken(BaseModel):
     ENTITY_TYPE: ClassVar[str] = "okta__okta_api_token"
     ENTITY_NAME: ClassVar[str] = "Okta API Token"
     ENTITY_DESCRIPTION: ClassVar[str] = "An Okta API token (SSWS): a long-lived secret that acts with the admin permissions of the user who created it."
+    # A long-lived token from Okta's `created`. No end: expiresAt slides 30 days past the last use,
+    # so it reads recent use and is not a stated end; it stays a typed field.
+    EVENT_TIME = Interval("created_at", "created")
     ENTITY_ICON: ClassVar[str] = "okta-api-token"
     # No default dimension: the dcom value belongs to the observation (a seeded design node is
     # `design`, a collected one `configuration`), so whatever writes the node stamps it.
