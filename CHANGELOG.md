@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.2](https://github.com/unified-systems-com/okta-tap/compare/v0.1.1...v0.1.2) (2026-11-24)
+
+
+### Features
+
+* declare event time for every model (tap v0.4.7) ([0982b2a](https://github.com/unified-systems-com/okta-tap/commit/0982b2a6b7b03d444ab98c6e0a1ab4f40da708f1))
+* declare event time for every model (tap v0.4.7) ([7b56873](https://github.com/unified-systems-com/okta-tap/commit/7b56873462e9e5fd928924369c656595accde8d9))
+* tap v0.4.9 — spine copies migration, format "1" documents ([37137f2](https://github.com/unified-systems-com/okta-tap/commit/37137f27f7247d82a4c03e52b7c78b9bf6e31a2b))
+* tap v0.4.9 — spine copies migration, format "1" documents ([ee4d414](https://github.com/unified-systems-com/okta-tap/commit/ee4d41410c4d4551bfd40be9732a48b979439eb7))
+
 ## [0.1.1](https://github.com/unified-systems-com/okta-tap/compare/v0.1.0...v0.1.1) (2026-11-20)
 
 
