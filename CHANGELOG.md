@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3](https://github.com/unified-systems-com/okta-tap/compare/v0.1.2...v0.1.3) (2026-11-25)
+
+
+### Bug Fixes
+
+* ship the history event-time migration on the tap v0.5.0 floor ([2c351c6](https://github.com/unified-systems-com/okta-tap/commit/2c351c6554ec25c12ddef50e6cdeaa185bdb8625))
+* ship the history event-time migration on the tap v0.5.0 floor ([a59adc5](https://github.com/unified-systems-com/okta-tap/commit/a59adc5b6c1d46879ffdfc243d96da56f97f3ca8))
+
 ## [0.1.2](https://github.com/unified-systems-com/okta-tap/compare/v0.1.1...v0.1.2) (2026-11-24)
 
 
